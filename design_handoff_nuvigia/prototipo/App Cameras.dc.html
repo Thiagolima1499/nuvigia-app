@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Nuvigia — Câmeras Wi-Fi</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Nuvigia">
+<meta name="theme-color" content="#f5ead8">
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#c67139"/><circle cx="50" cy="50" r="22" fill="#f5ead8"/><circle cx="50" cy="50" r="9" fill="#201e1d"/></svg></template>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-9795adb6-62fc-4030-b815-eeb6a366a5a6/styles.css">
+<script src="_ds/organic-9795adb6-62fc-4030-b815-eeb6a366a5a6/_ds_bundle.js"></script>
+<style>html,body{margin:0;background:var(--color-bg);height:100%;overscroll-behavior:none}a{color:var(--color-accent-700)}a:hover{color:var(--color-accent-800)}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}@keyframes spin{to{transform:rotate(360deg)}}</style>
+</helmet>
+<div style="font-family:var(--font-body);color:var(--color-text)">
+<div data-screen-label="App" style="width:100%;height:100vh;height:100dvh;background:var(--color-bg);position:relative;overflow:hidden">
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Câmeras" style="position:absolute;inset:0;overflow-y:auto;box-sizing:border-box;padding:calc(env(safe-area-inset-top) + var(--space-4)) max(var(--space-4), calc((100% - 1080px) / 2)) calc(env(safe-area-inset-bottom) + 110px)">
+<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+<div style="display:flex;flex-direction:column;gap:4px">
+<span style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-family:var(--font-heading);font-size:17px;color:var(--color-accent-700)">Nuvigia</span><span style="font-size:12px;color:var(--color-neutral-700)">Câmeras Wi-Fi</span></span>
+<span style="font-size:13px;color:var(--color-neutral-700);margin-top:6px">{{ greeting }}</span>
+<h1 style="font-family:var(--font-heading);font-weight:400;font-size:32px;line-height:1.05;margin:0">Minhas câmeras</h1>
+</div>
+<button class="btn btn-primary btn-icon" onClick="{{ openAdd }}" aria-label="Adicionar câmera" style="width:48px;height:48px;border-radius:999px;padding:0;justify-content:center;flex:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+</div>
+
+<sc-if value="{{ driveOn }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ goRec }}" style="margin-top:var(--space-4);display:flex;align-items:center;gap:12px;width:100%;border:none;cursor:pointer;text-align:left;font:inherit;color:inherit;padding:12px 16px;border-radius:999px;background:var(--color-accent-2-200)" style-hover="background:var(--color-accent-2-300)">
+<span style="width:34px;height:34px;border-radius:999px;background:var(--color-accent-2-600);color:var(--color-bg);display:grid;place-items:center;flex:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13v8"></path><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="m8 17 4-4 4 4"></path></svg></span>
+<span style="display:flex;flex-direction:column;flex:1;min-width:0"><span style="font-weight:600;font-size:14px;color:var(--color-accent-2-900)">Salvando no {{ prov.name }}</span><span style="font-size:12px;color:var(--color-accent-2-800)">{{ recCountLabel }} · {{ prov.quota }}</span></span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-2-800)" stroke-width="2.75" stroke-linecap="round"><path d="m9 18 6-6-6-6"></path></svg>
+</button>
+</sc-if>
+<sc-if value="{{ driveOff }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:var(--space-4);padding:var(--space-4);border-radius:var(--radius-lg);background:var(--color-accent-200);display:flex;flex-direction:column;gap:10px">
+<span style="font-family:var(--font-heading);font-size:19px;color:var(--color-accent-900)">Escolha onde salvar</span>
+<span style="font-size:13px;line-height:1.45;color:var(--color-accent-900)">Conecte Google Drive, OneDrive ou iCloud. Sem a nuvem, as gravações ficam só no cartão de memória das câmeras.</span>
+<button class="btn btn-primary" onClick="{{ askDrive }}" style="align-self:flex-start;border-radius:999px">Conectar nuvem</button>
+</div>
+</sc-if>
+
+<div style="display:grid;grid-template-columns:{{ gridCols }};gap:var(--space-3);margin-top:var(--space-6)">
+<sc-for list="{{ cams }}" as="c" hint-placeholder-count="4">
+<button onClick="{{ c.open }}" style="border:none;padding:0;background:none;text-align:left;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;gap:8px" style-hover="opacity:.92">
+<div style="position:relative;aspect-ratio:{{ feedRatio }};border-radius:var(--radius-lg);overflow:hidden;background:{{ c.feedBg }}">
+<sc-if value="{{ c.online }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;inset:0;background:radial-gradient(circle at 70% 30%, var(--color-neutral-700), transparent 65%)"></div>
+<div style="position:absolute;top:10px;left:10px;display:flex;gap:6px">
+<span style="display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--color-neutral-900) 70%,transparent);color:var(--color-neutral-100);font-size:11px;font-weight:600;letter-spacing:.04em">AO VIVO</span>
+<sc-if value="{{ c.recording }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;background:var(--color-accent);color:var(--color-bg);font-size:11px;font-weight:600"><span style="width:7px;height:7px;border-radius:999px;background:var(--color-bg);animation:pulse 1.4s infinite"></span>REC</span></sc-if>
+</div>
+<span style="position:absolute;left:12px;bottom:10px;font-size:11px;font-variant-numeric:tabular-nums;color:var(--color-neutral-200)">{{ clock }}</span>
+</sc-if>
+<sc-if value="{{ c.offline }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--color-neutral-700);font-size:13px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M12 20h.01"></path><path d="M8.5 16.429a5 5 0 0 1 7 0"></path><path d="M2 2l20 20"></path></svg>Sem conexão</div>
+</sc-if>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:0 6px">
+<span style="font-weight:600;font-size:15px">{{ c.name }}</span>
+<span style="font-size:12px;color:var(--color-neutral-700)">{{ c.mode }}</span>
+</div>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLive }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Ao vivo" style="position:absolute;inset:0;overflow-y:auto;box-sizing:border-box;padding:calc(env(safe-area-inset-top) + var(--space-4)) max(var(--space-4), calc((100% - 880px) / 2)) calc(env(safe-area-inset-bottom) + 40px);display:flex;flex-direction:column;gap:var(--space-4)">
+<div style="display:flex;align-items:center;gap:10px">
+<button onClick="{{ goHome }}" aria-label="Voltar" style="width:44px;height:44px;border-radius:999px;border:none;background:var(--color-surface);display:grid;place-items:center;cursor:pointer;color:inherit;flex:none" style-hover="background:var(--color-neutral-300)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+<div style="display:flex;flex-direction:column"><span style="font-family:var(--font-heading);font-size:22px;line-height:1.1">{{ cam.name }}</span><span style="font-size:12px;color:var(--color-neutral-700)">{{ cam.room }} · Wi‑Fi forte</span></div>
+</div>
+<div style="position:relative;width:100%;height:min(62vh, 125vw);min-height:220px;flex:none;border-radius:var(--radius-lg);overflow:hidden;background:var(--color-neutral-800)">
+<div style="position:absolute;inset:0;background:radial-gradient(circle at 65% 35%, var(--color-neutral-600), transparent 60%)"></div>
+<div style="position:absolute;top:14px;left:14px;display:flex;gap:6px">
+<span style="padding:4px 10px;border-radius:999px;background:color-mix(in srgb,var(--color-neutral-900) 70%,transparent);color:var(--color-neutral-100);font-size:12px;font-weight:600">AO VIVO · 1080p</span>
+<sc-if value="{{ cam.recording }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--color-accent);color:var(--color-bg);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums"><span style="width:8px;height:8px;border-radius:999px;background:var(--color-bg);animation:pulse 1.4s infinite"></span>{{ recElapsed }}</span></sc-if>
+</div>
+<sc-if value="{{ muted }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:14px;right:14px;padding:4px 10px;border-radius:999px;background:color-mix(in srgb,var(--color-neutral-900) 70%,transparent);color:var(--color-neutral-100);font-size:12px">Áudio mudo</span></sc-if>
+<span style="position:absolute;left:16px;bottom:14px;font-size:12px;font-variant-numeric:tabular-nums;color:var(--color-neutral-200)">{{ dateStamp }} {{ clock }}</span>
+</div>
+
+<button onClick="{{ toggleRec }}" style="display:flex;align-items:center;justify-content:center;gap:10px;height:58px;border-radius:999px;border:none;cursor:pointer;font-family:var(--font-heading);font-size:17px;background:{{ recBtnBg }};color:{{ recBtnFg }}">
+<span style="width:18px;height:18px;border-radius:{{ recDotRadius }};background:currentColor"></span>{{ recBtnLabel }}
+</button>
+
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3)">
+<button onClick="{{ snap }}" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 0;border:none;border-radius:var(--radius-lg);background:var(--color-surface);cursor:pointer;font:inherit;font-size:12px;color:inherit" style-hover="background:var(--color-neutral-300)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>Foto</button>
+<button onClick="{{ toggleMute }}" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 0;border:none;border-radius:var(--radius-lg);background:{{ muteBg }};cursor:pointer;font:inherit;font-size:12px;color:inherit" style-hover="opacity:.85"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><path d="M12 19v3"></path></svg>{{ muteLabel }}</button>
+<button onClick="{{ toggleTalk }}" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 0;border:none;border-radius:var(--radius-lg);background:{{ talkBg }};cursor:pointer;font:inherit;font-size:12px;color:inherit" style-hover="opacity:.85"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>{{ talkLabel }}</button>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:var(--space-2)">
+<span style="font-family:var(--font-heading);font-size:19px">Hoje</span>
+<sc-for list="{{ events }}" as="e" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radius-md);background:var(--color-surface)">
+<span style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;width:42px">{{ e.time }}</span>
+<span style="flex:1;font-size:14px">{{ e.label }}</span>
+<span class="tag tag-accent-2">{{ e.tag }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRec }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Gravações" style="position:absolute;inset:0;overflow-y:auto;box-sizing:border-box;padding:calc(env(safe-area-inset-top) + var(--space-4)) max(var(--space-4), calc((100% - 1080px) / 2)) calc(env(safe-area-inset-bottom) + 110px);display:flex;flex-direction:column;gap:var(--space-4)">
+<h1 style="font-family:var(--font-heading);font-weight:400;font-size:32px;margin:0">Gravações</h1>
+<div style="padding:var(--space-4);border-radius:var(--radius-lg);background:var(--color-accent-2-200);display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-weight:600;color:var(--color-accent-2-900)">{{ prov.name }}</span><span style="font-size:13px;color:var(--color-accent-2-800)">{{ prov.quota }}</span></div>
+<div style="height:10px;border-radius:999px;background:var(--color-accent-2-100);overflow:hidden"><div style="width:{{ prov.pct }};height:100%;border-radius:999px;background:var(--color-accent-2-600)"></div></div>
+<span style="font-size:12px;color:var(--color-accent-2-800)">Pasta: {{ prov.folder }}</span>
+</div>
+<div class="seg" role="radiogroup" style="align-self:flex-start;max-width:100%;overflow-x:auto;flex:none">
+<sc-for list="{{ recFilters }}" as="f" hint-placeholder-count="3"><label class="seg-opt"><input type="radio" name="rf" checked="{{ f.on }}" onChange="{{ f.pick }}">{{ f.label }}</label></sc-for>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:var(--space-3)">
+<sc-for list="{{ recordings }}" as="r" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:var(--radius-lg);background:var(--color-surface)">
+<div style="width:78px;height:58px;border-radius:var(--radius-md);background:var(--color-neutral-800);display:grid;place-items:center;flex:none;color:var(--color-neutral-200)"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+<span style="font-weight:600;font-size:14px">{{ r.cam }}</span>
+<span style="font-size:12px;color:var(--color-neutral-700)">{{ r.when }} · {{ r.dur }}</span>
+<sc-if value="{{ r.uploading }}" hint-placeholder-val="{{ false }}"><div style="height:6px;border-radius:999px;background:var(--color-neutral-300);overflow:hidden;margin-top:3px"><div style="width:{{ r.pct }};height:100%;border-radius:999px;background:var(--color-accent)"></div></div></sc-if>
+</div>
+<span class="tag {{ r.tagClass }}" style="flex:none">{{ r.status }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSet }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Ajustes" style="position:absolute;inset:0;overflow-y:auto;box-sizing:border-box;padding:calc(env(safe-area-inset-top) + var(--space-4)) max(var(--space-4), calc((100% - 640px) / 2)) calc(env(safe-area-inset-bottom) + 110px);display:flex;flex-direction:column;gap:var(--space-4)">
+<h1 style="font-family:var(--font-heading);font-weight:400;font-size:32px;margin:0">Ajustes</h1>
+<div style="display:flex;flex-direction:column;gap:8px">
+<span style="font-size:13px;font-weight:600;color:var(--color-neutral-700)">Onde salvar as gravações</span>
+<div style="display:flex;flex-direction:column;border-radius:var(--radius-lg);background:var(--color-surface);overflow:hidden">
+<sc-for list="{{ provList }}" as="pv" hint-placeholder-count="3">
+<button onClick="{{ pv.pick }}" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:none;background:{{ pv.bg }};font:inherit;color:inherit;text-align:left;cursor:pointer" style-hover="opacity:.85">
+<span style="width:40px;height:40px;border-radius:999px;background:{{ pv.badgeBg }};color:{{ pv.badgeFg }};display:grid;place-items:center;font-family:var(--font-heading);font-size:17px;flex:none">{{ pv.initial }}</span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600">{{ pv.name }}</span><span style="font-size:12px;color:var(--color-neutral-700)">{{ pv.sub }}</span></span>
+<sc-if value="{{ pv.active }}" hint-placeholder-val="{{ false }}"><span class="tag tag-accent-2">Conectado</span></sc-if>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{ driveOn }}" hint-placeholder-val="{{ true }}"><button class="btn btn-secondary" onClick="{{ disconnect }}" style="align-self:flex-start;border-radius:999px">Desconectar {{ prov.name }}</button></sc-if>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:8px">
+<span style="font-size:13px;font-weight:600;color:var(--color-neutral-700)">Qualidade da gravação</span>
+<div class="seg" role="radiogroup" style="align-self:flex-start">
+<sc-for list="{{ qualities }}" as="q" hint-placeholder-count="3"><label class="seg-opt"><input type="radio" name="q" checked="{{ q.on }}" onChange="{{ q.pick }}">{{ q.label }}</label></sc-for>
+</div>
+<span style="font-size:12px;color:var(--color-neutral-700)">{{ qualityHint }}</span>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<span style="font-size:13px;font-weight:600;color:var(--color-neutral-700)">Quando gravar</span>
+<sc-for list="{{ modes }}" as="m" hint-placeholder-count="2"><label class="radio"><input type="radio" name="mode" checked="{{ m.on }}" onChange="{{ m.pick }}"><span class="dot"></span>{{ m.label }}</label></sc-for>
+</div>
+
+<div style="display:flex;flex-direction:column;border-radius:var(--radius-lg);background:var(--color-surface);overflow:hidden">
+<sc-for list="{{ switches }}" as="s" hint-placeholder-count="3">
+<button onClick="{{ s.toggle }}" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:none;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer" style-hover="background:var(--color-neutral-300)">
+<span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600">{{ s.label }}</span><span style="font-size:12px;color:var(--color-neutral-700)">{{ s.hint }}</span></span>
+<span style="width:48px;height:28px;border-radius:999px;background:{{ s.track }};position:relative;flex:none;transition:background .2s"><span style="position:absolute;top:3px;left:{{ s.knob }};width:22px;height:22px;border-radius:999px;background:var(--color-neutral-100);box-shadow:var(--shadow-sm);transition:left .2s"></span></span>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:50%;transform:translateX(-50%);width:min(calc(100% - 32px), 480px);bottom:calc(env(safe-area-inset-bottom) + 16px);height:66px;border-radius:999px;background:var(--color-neutral-900);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:6px;box-sizing:border-box;box-shadow:var(--shadow-lg);z-index:10">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+<button onClick="{{ t.go }}" style="border:none;border-radius:999px;background:{{ t.bg }};color:{{ t.fg }};display:flex;align-items:center;justify-content:center;gap:7px;font:inherit;font-size:13px;font-weight:600;cursor:pointer">
+<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="{{ t.d1 }}"></path><path d="{{ t.d2 }}"></path></svg><span>{{ t.label }}</span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAdd }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Adicionar câmera" style="position:absolute;inset:0;box-sizing:border-box;background:var(--color-bg);z-index:15;padding:calc(env(safe-area-inset-top) + var(--space-4)) max(var(--space-4), calc((100% - 560px) / 2)) calc(env(safe-area-inset-bottom) + 32px);display:flex;flex-direction:column;gap:var(--space-4);overflow-y:auto">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:13px;color:var(--color-neutral-700)">{{ addStepLabel }}</span>
+<button onClick="{{ closeAdd }}" aria-label="Fechar" style="width:44px;height:44px;border-radius:999px;border:none;background:var(--color-surface);display:grid;place-items:center;cursor:pointer;color:inherit" style-hover="background:var(--color-neutral-300)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+</div>
+
+<sc-if value="{{ stepScan }}" hint-placeholder-val="{{ true }}">
+<h2 style="font-family:var(--font-heading);font-weight:400;font-size:30px;line-height:1.1;margin:0">Procurando câmeras na sua rede</h2>
+<p style="margin:0;font-size:14px;line-height:1.5;color:var(--color-neutral-800);text-wrap:pretty">Ligue a câmera e deixe o celular conectado ao Wi‑Fi <strong>Casa_5G</strong>.</p>
+<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:999px;background:var(--color-accent-100)">
+<span style="width:20px;height:20px;border-radius:999px;border:3px solid var(--color-accent-300);border-top-color:var(--color-accent);animation:spin 1s linear infinite;box-sizing:border-box"></span>
+<span style="font-size:14px;color:var(--color-accent-800)">{{ scanLabel }}</span>
+</div>
+<sc-for list="{{ found }}" as="d" hint-placeholder-count="0">
+<button onClick="{{ d.pick }}" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:none;border-radius:var(--radius-lg);background:var(--color-surface);font:inherit;color:inherit;text-align:left;cursor:pointer" style-hover="background:var(--color-neutral-300)">
+<span style="width:42px;height:42px;border-radius:999px;background:var(--color-accent-2-200);color:var(--color-accent-2-800);display:grid;place-items:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg></span>
+<span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;font-size:14px">{{ d.model }}</span><span style="font-size:12px;color:var(--color-neutral-700)">{{ d.ip }}</span></span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="m9 18 6-6-6-6"></path></svg>
+</button>
+</sc-for>
+<button class="btn btn-ghost" style="align-self:flex-start">Adicionar por IP ou QR code</button>
+</sc-if>
+
+<sc-if value="{{ stepForm }}" hint-placeholder-val="{{ false }}">
+<h2 style="font-family:var(--font-heading);font-weight:400;font-size:30px;line-height:1.1;margin:0">Configurar {{ picked.model }}</h2>
+<div class="field"><label>Nome da câmera</label><input class="input" value="{{ newName }}" onChange="{{ setName }}" style="border-radius:999px;min-height:48px;padding:0 18px"></div>
+<div class="field"><label>Cômodo</label><input class="input" value="{{ newRoom }}" onChange="{{ setRoom }}" style="border-radius:999px;min-height:48px;padding:0 18px"></div>
+<div class="field"><label>Senha do Wi‑Fi Casa_5G</label><input class="input" type="password" value="{{ wifiPass }}" onChange="{{ setPass }}" placeholder="Senha da rede" style="border-radius:999px;min-height:48px;padding:0 18px"></div>
+<sc-if value="{{ passErr }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:var(--color-accent-700);margin-top:-8px;padding-left:18px">A senha precisa ter ao menos 8 caracteres.</span></sc-if>
+<button onClick="{{ toggleNewDrive }}" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:none;border-radius:var(--radius-lg);background:var(--color-surface);font:inherit;color:inherit;text-align:left;cursor:pointer">
+<span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600">Gravar na nuvem</span><span style="font-size:12px;color:var(--color-neutral-700)">Clipes de movimento enviados automaticamente</span></span>
+<span style="width:48px;height:28px;border-radius:999px;background:{{ newDriveTrack }};position:relative;flex:none"><span style="position:absolute;top:3px;left:{{ newDriveKnob }};width:22px;height:22px;border-radius:999px;background:var(--color-neutral-100);transition:left .2s"></span></span>
+</button>
+<div style="flex:1"></div>
+<button class="btn btn-primary btn-block" onClick="{{ connect }}" style="border-radius:999px;min-height:54px;font-size:16px;justify-content:center">Conectar câmera</button>
+</sc-if>
+
+<sc-if value="{{ stepConn }}" hint-placeholder-val="{{ false }}">
+<h2 style="font-family:var(--font-heading);font-weight:400;font-size:30px;line-height:1.1;margin:0">{{ connTitle }}</h2>
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ connSteps }}" as="k" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:999px;background:{{ k.bg }}">
+<span style="width:28px;height:28px;border-radius:999px;background:{{ k.dotBg }};color:var(--color-bg);display:grid;place-items:center;flex:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+<span style="font-size:14px;color:{{ k.fg }}">{{ k.label }}</span>
+</div>
+</sc-for>
+</div>
+<div style="flex:1"></div>
+<sc-if value="{{ connDone }}" hint-placeholder-val="{{ false }}"><button class="btn btn-primary btn-block" onClick="{{ finishAdd }}" style="border-radius:999px;min-height:54px;font-size:16px;justify-content:center">Ver ao vivo</button></sc-if>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ showDialog }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:30;background:color-mix(in srgb,var(--color-neutral-900) 50%,transparent);display:flex;align-items:flex-end;justify-content:center;padding:12px 12px calc(env(safe-area-inset-bottom) + 12px)">
+<div class="dialog" style="width:min(460px,100%);box-sizing:border-box;border-radius:36px">
+<div class="dialog-title">Onde salvar as gravações?</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ dlgOpts }}" as="o" hint-placeholder-count="3"><label class="radio" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:999px;background:{{ o.bg }};cursor:pointer"><input type="radio" name="prov" checked="{{ o.on }}" onChange="{{ o.pick }}"><span class="dot"></span><span style="flex:1;font-weight:600">{{ o.name }}</span><span style="font-size:12px;color:var(--color-neutral-700)">{{ o.note }}</span></label></sc-for>
+</div>
+<div class="dialog-body">{{ dlgBody }}</div>
+<div class="dialog-actions" style="display:flex;gap:8px;justify-content:flex-end">
+<button class="btn btn-secondary" onClick="{{ closeDialog }}" style="border-radius:999px">Agora não</button>
+<button class="btn btn-primary" onClick="{{ connectDrive }}" style="border-radius:999px">{{ dlgCta }}</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:50%;transform:translateX(-50%);width:min(calc(100% - 48px), 420px);box-sizing:border-box;bottom:calc(env(safe-area-inset-bottom) + 100px);z-index:25;padding:14px 18px;border-radius:999px;background:var(--color-neutral-900);color:var(--color-neutral-100);font-size:14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-lg)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-2-400)" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>{{ toast }}</div>
+</sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;homeLayout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Lista&quot;,&quot;Grade&quot;],&quot;default&quot;:&quot;Lista&quot;,&quot;tsType&quot;:&quot;'Lista'|'Grade'&quot;},&quot;cloudProvider&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Google Drive&quot;,&quot;OneDrive&quot;,&quot;iCloud&quot;],&quot;default&quot;:&quot;Google Drive&quot;,&quot;tsType&quot;:&quot;'Google Drive'|'OneDrive'|'iCloud'&quot;},&quot;driveConnected&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'home', camId: 1, now: new Date(), muted: false, talk: false,
+    drive: null, provider: null, dlgPick: 'google', dialog: false, toast: '', quality: '1080p', mode: 'motion',
+    sw: { wifiOnly: true, notify: true, del30: true }, recFilter: 'Todas',
+    cams: [
+      { id: 1, name: 'Sala de estar', room: 'Térreo', online: true, recording: true, recStart: Date.now() - 754000 },
+      { id: 2, name: 'Portão', room: 'Entrada', online: true, recording: false },
+      { id: 3, name: 'Quintal', room: 'Fundos', online: true, recording: false },
+      { id: 4, name: 'Garagem', room: 'Térreo', online: false, recording: false },
+    ],
+    upload: 64,
+    addStep: 'scan', found: 0, picked: null, newName: 'Cozinha', newRoom: 'Térreo', wifiPass: '', passErr: false, newDrive: true, conn: 0,
+  };
+  componentDidMount() {
+    this.t = setInterval(() => this.setState(s => ({ now: new Date(), upload: s.upload >= 100 ? 100 : s.upload + 1 })), 1000);
+  }
+  componentWillUnmount() { clearInterval(this.t); (this.timers || []).forEach(clearTimeout); }
+  later(fn, ms) { (this.timers = this.timers || []).push(setTimeout(fn, ms)); }
+  showToast(msg) { this.setState({ toast: msg }); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: '' }), 2200); }
+  pad(n) { return String(n).padStart(2, '0'); }
+  startAdd() {
+    this.setState({ screen: 'add', addStep: 'scan', found: 0, picked: null, wifiPass: '', passErr: false, conn: 0, newName: 'Cozinha' });
+    this.later(() => this.setState({ found: 1 }), 1200);
+    this.later(() => this.setState({ found: 3 }), 2200);
+  }
+  connect() {
+    if (this.state.wifiPass.length < 8) return this.setState({ passErr: true });
+    this.setState({ addStep: 'conn', conn: 0, passErr: false });
+    [900, 1900, 2900].forEach((ms, i) => this.later(() => this.setState({ conn: i + 1 }), ms));
+  }
+  finishAdd() {
+    const s = this.state, id = Date.now();
+    const cam = { id, name: s.newName || 'Nova câmera', room: s.newRoom || 'Casa', online: true, recording: false };
+    this.setState({ cams: [...s.cams, cam], screen: 'live', camId: id });
+  }
+  renderVals() {
+    const s = this.state, p = this.props;
+    const driveOn = s.drive ?? (p.driveConnected ?? true);
+    const PROV = {
+      google: { name: 'Google Drive', short: 'Drive', initial: 'G', account: 'voce@gmail.com', quota: '38,2 GB de 100 GB', pct: '38%', folder: 'Meu Drive › Nuvigia', note: '15 GB grátis', badgeBg: 'var(--color-accent-2-300)', badgeFg: 'var(--color-accent-2-900)', cta: 'Entrar com Google' },
+      onedrive: { name: 'OneDrive', short: 'OneDrive', initial: 'O', account: 'voce@outlook.com', quota: '12,4 GB de 1 TB', pct: '2%', folder: 'OneDrive › Aplicativos › Nuvigia', note: '5 GB grátis', badgeBg: 'var(--color-accent-300)', badgeFg: 'var(--color-accent-900)', cta: 'Entrar com Microsoft' },
+      icloud: { name: 'iCloud Drive', short: 'iCloud', initial: 'A', account: 'Conta Apple · voce@icloud.com', quota: '146 GB de 200 GB', pct: '73%', folder: 'iCloud Drive › Nuvigia', note: '5 GB grátis', badgeBg: 'var(--color-neutral-300)', badgeFg: 'var(--color-neutral-900)', cta: 'Entrar com Apple' },
+    };
+    const propKey = { 'Google Drive': 'google', 'OneDrive': 'onedrive', 'iCloud': 'icloud' }[p.cloudProvider] || 'google';
+    const pk = s.provider ?? propKey, prov = PROV[pk], dk = s.dlgPick, dp = PROV[dk];
+    const openDlg = k => this.setState({ dialog: true, dlgPick: k || pk });
+    const grid = (p.homeLayout ?? 'Lista') === 'Grade';
+    const now = s.now, clock = `${this.pad(now.getHours())}:${this.pad(now.getMinutes())}:${this.pad(now.getSeconds())}`;
+    const h = now.getHours();
+    const cam = s.cams.find(c => c.id === s.camId) || s.cams[0];
+    const el = cam.recStart ? Math.floor((Date.now() - cam.recStart) / 1000) : 0;
+    const setCam = (id, patch) => this.setState(st => ({ cams: st.cams.map(c => c.id === id ? { ...c, ...patch } : c) }));
+    const modeLabel = s.mode === 'motion' ? 'Por movimento' : 'Contínua';
+    const go = scr => () => this.setState({ screen: scr });
+    const icons = {
+      home: ['m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5', 'M4 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z'],
+      rec: ['M12 13v8', 'M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242'],
+      set: ['M20 7h-9M14 17H5', 'M17 14a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM7 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'],
+    };
+    const tabs = [['home', 'Câmeras'], ['rec', 'Gravações'], ['set', 'Ajustes']].map(([k, label]) => ({
+      label, go: go(k), d1: icons[k][0], d2: icons[k][1],
+      bg: s.screen === k ? 'var(--color-accent)' : 'transparent',
+      fg: s.screen === k ? 'var(--color-bg)' : 'var(--color-neutral-300)',
+    }));
+    const allRecs = [
+      { cam: 'Sala de estar', when: 'Hoje, 14:32', dur: '1 min 12 s', up: true },
+      { cam: 'Portão', when: 'Hoje, 13:05', dur: '48 s' },
+      { cam: 'Quintal', when: 'Hoje, 09:41', dur: '2 min 03 s' },
+      { cam: 'Portão', when: 'Ontem, 22:17', dur: '35 s' },
+      { cam: 'Sala de estar', when: 'Ontem, 18:50', dur: '4 min 20 s' },
+    ];
+    const recordings = allRecs.filter(r => s.recFilter === 'Todas' || r.cam === s.recFilter).map(r => {
+      const uploading = r.up && s.upload < 100;
+      return { ...r, uploading, pct: s.upload + '%', status: uploading ? `Enviando ${s.upload}%` : `No ${prov.short}`, tagClass: uploading ? 'tag-accent' : 'tag-accent-2' };
+    });
+    const qHints = { '720p': 'Cerca de 0,4 GB por hora de vídeo', '1080p': 'Cerca de 0,9 GB por hora de vídeo', '2K': 'Cerca de 1,8 GB por hora de vídeo' };
+    const swDefs = [
+      ['wifiOnly', 'Enviar só no Wi‑Fi', 'Não usa seus dados móveis'],
+      ['notify', 'Avisar quando houver movimento', 'Notificação com foto da câmera'],
+      ['del30', 'Apagar da nuvem após 30 dias', 'Libera espaço automaticamente'],
+    ];
+    const steps = ['Câmera encontrada', 'Conectando ao Wi‑Fi Casa_5G', s.newDrive ? `Vinculando ao ${prov.name}` : 'Preparando transmissão'];
+    const devices = [
+      { model: 'Tapo C200', ip: '192.168.0.41' },
+      { model: 'Intelbras iM3', ip: '192.168.0.57' },
+      { model: 'Câmera ONVIF', ip: '192.168.0.63' },
+    ];
+    return {
+      greeting: h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite',
+      isHome: s.screen === 'home', isLive: s.screen === 'live', isRec: s.screen === 'rec', isSet: s.screen === 'set', isAdd: s.screen === 'add',
+      showTabs: ['home', 'rec', 'set'].includes(s.screen),
+      tabs, goHome: go('home'), goRec: go('rec'), openAdd: () => this.startAdd(), closeAdd: go('home'),
+      driveOn, driveOff: !driveOn,
+      recCountLabel: `${s.cams.filter(c => c.recording).length} gravando agora`,
+      gridCols: grid ? 'repeat(auto-fill,minmax(min(100%,170px),1fr))' : 'repeat(auto-fill,minmax(min(100%,320px),1fr))', feedRatio: grid ? '1/1' : '16/10',
+      clock, dateStamp: `${this.pad(now.getDate())}/${this.pad(now.getMonth() + 1)}`,
+      cams: s.cams.map(c => ({
+        ...c, offline: !c.online, mode: c.online ? modeLabel : 'Offline',
+        feedBg: c.online ? 'var(--color-neutral-800)' : 'var(--color-neutral-300)',
+        open: () => c.online ? this.setState({ screen: 'live', camId: c.id }) : this.showToast('Garagem está sem conexão'),
+      })),
+      cam, recElapsed: `${this.pad(Math.floor(el / 60))}:${this.pad(el % 60)}`,
+      toggleRec: () => {
+        if (!driveOn) return openDlg();
+        if (cam.recording) { setCam(cam.id, { recording: false, recStart: null }); this.showToast(`Gravação enviada ao ${prov.name}`); }
+        else setCam(cam.id, { recording: true, recStart: Date.now() });
+      },
+      recBtnBg: cam.recording ? 'var(--color-neutral-900)' : 'var(--color-accent)',
+      recBtnFg: cam.recording ? 'var(--color-neutral-100)' : 'var(--color-bg)',
+      recDotRadius: cam.recording ? '4px' : '999px',
+      recBtnLabel: cam.recording ? 'Parar e salvar na nuvem' : `Gravar no ${prov.name}`,
+      snap: () => driveOn ? this.showToast(`Foto salva no ${prov.name}`) : openDlg(),
+      muted: s.muted, toggleMute: () => this.setState({ muted: !s.muted }),
+      muteBg: s.muted ? 'var(--color-accent-200)' : 'var(--color-surface)', muteLabel: s.muted ? 'Mudo' : 'Áudio',
+      toggleTalk: () => this.setState({ talk: !s.talk }),
+      talkBg: s.talk ? 'var(--color-accent-2-300)' : 'var(--color-surface)', talkLabel: s.talk ? 'Falando…' : 'Falar',
+      events: [
+        { time: '14:32', label: 'Movimento detectado', tag: 'Gravado' },
+        { time: '11:08', label: 'Pessoa na entrada', tag: 'Gravado' },
+        { time: '07:15', label: 'Câmera reconectada', tag: 'Sistema' },
+      ],
+      recFilters: ['Todas', 'Sala de estar', 'Portão'].map(label => ({ label, on: s.recFilter === label, pick: () => this.setState({ recFilter: label }) })),
+      recordings,
+      driveAccount: driveOn ? 'voce@gmail.com' : 'Não conectado',
+      driveTag: driveOn ? 'Conectado' : 'Desligado', driveTagClass: driveOn ? 'tag-accent-2' : 'tag-neutral',
+      driveActionLabel: driveOn ? 'Desconectar conta' : 'Conectar Google Drive',
+      driveAction: () => driveOn ? this.setState({ drive: false }) : this.setState({ dialog: true }),
+      showDialog: s.dialog, closeDialog: () => this.setState({ dialog: false }),
+      connectDrive: () => { this.setState({ dialog: false, drive: true, provider: dk }); this.showToast(`${dp.name} conectado`); },
+      prov, askDrive: () => openDlg(),
+      disconnect: () => this.setState({ drive: false }),
+      provList: Object.entries(PROV).map(([k, v]) => {
+        const active = driveOn && k === pk;
+        return { ...v, active, sub: active ? v.account : 'Não conectado', bg: active ? 'var(--color-accent-2-200)' : 'transparent', pick: () => active ? null : openDlg(k) };
+      }),
+      dlgOpts: Object.entries(PROV).map(([k, v]) => ({ name: v.name, note: v.note, on: k === dk, bg: k === dk ? 'var(--color-accent-100)' : 'var(--color-neutral-100)', pick: () => this.setState({ dlgPick: k }) })),
+      dlgBody: `${dk === 'icloud' ? 'Você vai entrar com sua Conta Apple. ' : ''}O Nuvigia vai criar a pasta “Nuvigia” no ${dp.name} e salvar nela apenas vídeos e fotos das suas câmeras.`,
+      dlgCta: dp.cta,
+      qualities: ['720p', '1080p', '2K'].map(label => ({ label, on: s.quality === label, pick: () => this.setState({ quality: label }) })),
+      qualityHint: qHints[s.quality],
+      modes: [['motion', 'Só quando houver movimento'], ['cont', 'O tempo todo']].map(([k, label]) => ({ label, on: s.mode === k, pick: () => this.setState({ mode: k }) })),
+      switches: swDefs.map(([k, label, hint]) => ({
+        label, hint, toggle: () => this.setState(st => ({ sw: { ...st.sw, [k]: !st.sw[k] } })),
+        track: s.sw[k] ? 'var(--color-accent-2-600)' : 'var(--color-neutral-400)', knob: s.sw[k] ? '23px' : '3px',
+      })),
+      addStepLabel: { scan: 'Passo 1 de 3', form: 'Passo 2 de 3', conn: 'Passo 3 de 3' }[s.addStep],
+      stepScan: s.addStep === 'scan', stepForm: s.addStep === 'form', stepConn: s.addStep === 'conn',
+      scanLabel: s.found ? `${s.found} ${s.found > 1 ? 'câmeras encontradas' : 'câmera encontrada'}, buscando mais…` : 'Buscando no Wi‑Fi…',
+      found: devices.slice(0, s.found).map(d => ({ ...d, pick: () => this.setState({ picked: d, addStep: 'form' }) })),
+      picked: s.picked || devices[0],
+      newName: s.newName, newRoom: s.newRoom, wifiPass: s.wifiPass, passErr: s.passErr,
+      setName: e => this.setState({ newName: e.target.value }),
+      setRoom: e => this.setState({ newRoom: e.target.value }),
+      setPass: e => this.setState({ wifiPass: e.target.value, passErr: false }),
+      toggleNewDrive: () => this.setState({ newDrive: !s.newDrive }),
+      newDriveTrack: s.newDrive ? 'var(--color-accent-2-600)' : 'var(--color-neutral-400)', newDriveKnob: s.newDrive ? '23px' : '3px',
+      connect: () => this.connect(),
+      connTitle: s.conn >= 3 ? `${s.newName || 'Câmera'} pronta` : 'Conectando…',
+      connDone: s.conn >= 3, finishAdd: () => this.finishAdd(),
+      connSteps: steps.map((label, i) => {
+        const done = s.conn > i;
+        return { label, bg: done ? 'var(--color-accent-2-200)' : 'var(--color-surface)', dotBg: done ? 'var(--color-accent-2-600)' : 'var(--color-neutral-400)', fg: done ? 'var(--color-accent-2-900)' : 'var(--color-neutral-700)' };
+      }),
+      hasToast: !!s.toast, toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
