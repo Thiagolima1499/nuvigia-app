@@ -17,7 +17,7 @@ export type UiEvent = CameraEvent & { label: string; tag: 'Gravado' | 'Sistema' 
  * só mexem no estado local, simulando o hub.
  */
 export type Remote = {
-  send: (command: HubCommand) => Promise<unknown>;
+  send: (command: HubCommand, timeoutMs?: number) => Promise<unknown>;
   updateSettings: (patch: Partial<{ quality: Quality; record_mode: RecordMode; wifi_only: boolean; notify_motion: boolean; retention_days: number | null }>) => Promise<void>;
   updateCamera: (id: string, patch: Partial<{ name: string; room: string }>) => Promise<void>;
   deleteRecording: (id: string) => Promise<void>;
@@ -77,6 +77,10 @@ export type AppState = {
   /** Avança 1% os envios em andamento (só na demonstração; no real vem do hub). */
   tickUploads: () => void;
   retryUpload: (recordingId: string) => void;
+  /** Progresso de envio publicado pelo hub no Realtime (mais frequente que o banco). */
+  setUploadProgress: (recordingId: string, progress: number) => void;
+  /** Liga a nuvem no hub com o resultado do login feito no app. */
+  linkCloud: (command: Extract<HubCommand, { type: 'connectCloud' }>) => Promise<void>;
   clearError: () => void;
   /** Só para simular estados no catálogo. */
   simulate: (patch: Partial<Pick<AppState, 'cameras' | 'recordings' | 'hubStatus'>>) => void;
@@ -263,6 +267,19 @@ export const useAppStore = create<AppState>()((set, get) => {
         }),
       });
     },
+    setUploadProgress: (id, progress) =>
+      set((s) => ({
+        recordings: s.recordings.map((r) => (r.id === id && r.status === 'uploading' ? { ...r, uploadProgress: Math.max(r.uploadProgress, Math.min(progress, 99)) } : r)),
+      })),
+
+    linkCloud: async (command) => {
+      const r = get().remote;
+      if (!r) return;
+      // trocar o código, criar a pasta e ler a cota leva alguns segundos
+      await r.send(command, 60_000);
+      set((s) => ({ cloud: command.provider, cloudDialog: { ...s.cloudDialog, open: false } }));
+    },
+
     retryUpload: (id) => {
       set((s) => ({ recordings: s.recordings.map((r) => (r.id === id ? { ...r, status: 'uploading', uploadProgress: Math.min(r.uploadProgress, 99) } : r)) }));
       if (live()) remoteSend({ type: 'retryUpload', recordingId: id }).catch(() => undefined);

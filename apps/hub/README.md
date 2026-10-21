@@ -20,6 +20,8 @@ hub ◀──Realtime (hub:<id>)──▶ Supabase ◀──▶ app
 - **Movimento.** Compara quadros pequenos em tons de cinza (64×36, 2 por segundo) e também ouve os eventos de movimento ONVIF quando a câmera tem.
   Cada movimento vira um evento com miniatura (bucket `thumbnails`), que a etapa 7 usa para notificar.
 - **Fotos.** O botão de foto pega a imagem atual pelo go2rtc e salva como gravação do tipo foto.
+- **Nuvem.** Fila persistente de envio, um arquivo por vez, em partes e com retomada. Pastas `Nuvigia/{Câmera}/{AAAA-MM-DD}/`. O progresso aparece no app como "Enviando n%".
+  Se der erro, tenta de novo em 1 min, 5 min, 15 min, 1 h e 3 h, e depois mostra a falha com o botão "Tentar de novo". Apaga da nuvem o que passou da retenção (30 dias por padrão) e atualiza a cota. Como configurar cada provedor: [docs/configurar-nuvem.md](../../docs/configurar-nuvem.md).
 - **Disco.** Arquivos já enviados saem do hub depois de `LOCAL_KEEP_DAYS`. Sem nuvem, os arquivos ficam no hub até vencer a retenção dos Ajustes.
 - **mDNS.** Anuncia `_nuvigia._tcp` na rede local.
 
@@ -91,4 +93,5 @@ Os testes usam processos e servidores falsos (ffmpeg, go2rtc, ONVIF, Supabase), 
 | `MAX_MANUAL_SECONDS` | 3600 | Limite da gravação manual |
 | `LOCAL_KEEP_DAYS` | 3 | Dias que um arquivo já enviado fica no hub |
 | `MDNS` | true | Anunciar na rede local |
+| `CLOUDKIT_CONTAINER`, `CLOUDKIT_API_TOKEN`, `CLOUDKIT_ENV` | `iCloud.br.com.nuvigia`, —, development | iCloud (CloudKit Web Services) |
 | `LOG_LEVEL` | info | Nível de log |

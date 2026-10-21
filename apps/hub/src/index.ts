@@ -5,7 +5,14 @@ import pino from 'pino';
 import { HubRemovedError, SupabaseBackend } from './backend';
 import { CameraManager } from './cameras';
 import { HubChannel } from './channel';
-import { NoCloud, type CloudControl } from './cloud';
+import type { CloudProviderId } from '@nuvigia/shared';
+
+import { GoogleDrive } from './cloud/google';
+import { ICloud, type CloudKitToken } from './cloud/icloud';
+import type { OAuthToken } from './cloud/oauth';
+import { OneDrive } from './cloud/onedrive';
+import type { CloudProvider } from './cloud/provider';
+import { Uploader } from './cloud/uploader';
 import { handleCommand } from './commands';
 import { loadConfig } from './config';
 import { parseKey, Secrets } from './crypto';
@@ -70,12 +77,26 @@ async function main() {
 
   const go2rtc = new Go2rtc(cfg.GO2RTC_URL, cfg.GO2RTC_RTSP);
   const onvif = new OnvifService();
-  const cloud: CloudControl = new NoCloud();
   let channel: HubChannel | null = null;
-  const cameras = new CameraManager({ cfg, backend, store, go2rtc, onvif, cloud, spawn: spawnProcess, log, emit: (e) => void channel?.emit(e) });
+  let settings = await backend.getSettings();
+  const tokenStore = <T,>(id: CloudProviderId) => ({ get: () => store.getCloudToken<T>(id), set: (t: T) => store.setCloudToken(id, t) });
+  const makeProvider = (id: CloudProviderId): CloudProvider => {
+    if (id === 'google') return new GoogleDrive(tokenStore<OAuthToken>('google'));
+    if (id === 'onedrive') return new OneDrive(tokenStore<OAuthToken>('onedrive'));
+    return new ICloud({ container: cfg.CLOUDKIT_CONTAINER, apiToken: cfg.CLOUDKIT_API_TOKEN, environment: cfg.CLOUDKIT_ENV }, tokenStore<CloudKitToken>('icloud'));
+  };
+  const cloud: Uploader = new Uploader({
+    backend,
+    store,
+    log,
+    makeProvider,
+    cameraName: (id: string): string => cameras.list().find((c) => c.id === id)?.name ?? 'Câmera',
+    settings: () => settings,
+    emit: (e) => void channel?.emit(e),
+  });
+  const cameras: CameraManager = new CameraManager({ cfg, backend, store, go2rtc, onvif, cloud, spawn: spawnProcess, log, emit: (e) => void channel?.emit(e) });
   channel = new HubChannel(supabase, identity.hubId, (cmd, emit) => handleCommand(cmd, { version: cfg.version, backend, cameras, cloud, onvif, log }, emit), log);
 
-  let settings = await backend.getSettings();
   await cameras.start(settings);
   cloud.start();
   channel.start();

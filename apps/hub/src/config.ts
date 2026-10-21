@@ -32,6 +32,10 @@ const Env = z.object({
   MAX_MANUAL_SECONDS: z.coerce.number().int().min(60).default(3600),
   /** Arquivos locais já enviados são apagados depois destes dias. */
   LOCAL_KEEP_DAYS: z.coerce.number().int().min(0).default(3),
+  /** iCloud (CloudKit Web Services). O token de API é o mesmo usado no app. */
+  CLOUDKIT_CONTAINER: z.string().default('iCloud.br.com.nuvigia'),
+  CLOUDKIT_API_TOKEN: z.string().default(''),
+  CLOUDKIT_ENV: z.enum(['development', 'production']).default('development'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
 });
 

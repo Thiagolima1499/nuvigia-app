@@ -26,7 +26,7 @@ export async function startSync(supabase: SupabaseClient, hubId: string): Promis
   const hub = new HubClient(supabase, hubId);
 
   const remote: Remote = {
-    send: (command) => hub.send(command),
+    send: (command, timeoutMs) => hub.send(command, timeoutMs),
     updateSettings: async (patch) => {
       const { error } = await supabase.from('settings').update(patch).eq('hub_id', hubId);
       if (error) throw error;
@@ -95,9 +95,13 @@ export async function startSync(supabase: SupabaseClient, hubId: string): Promis
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'hubs', filter: `id=eq.${hubId}` }, (p) => applyHub(p.new as HubRow))
     .subscribe();
 
+  const offEvents = hub.onEvent((e) => {
+    if (e.type === 'uploadProgress') useAppStore.getState().setUploadProgress(e.recordingId, e.progress);
+  });
   hub.connect().catch(() => useAppStore.getState().setHubStatus('unreachable'));
 
   return async () => {
+    offEvents();
     await supabase.removeChannel(changes);
     await hub.close();
     hubClientRef.current = null;

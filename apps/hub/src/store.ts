@@ -148,6 +148,10 @@ export class LocalStore {
       .run(provider, this.secrets.encryptJson(token, `cloud:${provider}`));
   }
 
+  deleteCloudToken(provider: CloudProviderId) {
+    this.db.prepare('delete from cloud_tokens where provider = ?').run(provider);
+  }
+
   deleteCloudTokens() {
     this.db.exec('delete from cloud_tokens');
   }
@@ -194,6 +198,11 @@ export class LocalStore {
 
   deleteFile(recordingId: string) {
     this.db.prepare('delete from local_files where recording_id = ?').run(recordingId);
+  }
+
+  filesByStatus(...status: LocalFileStatus[]): LocalFile[] {
+    const marks = status.map(() => '?').join(', ');
+    return (this.db.prepare(`select * from local_files where status in (${marks}) order by started_at`).all(...status) as FileRow[]).map(fromRow);
   }
 
   filesForCamera(cameraId: string): LocalFile[] {

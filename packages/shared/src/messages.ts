@@ -32,6 +32,8 @@ export const HubCommand = z.discriminatedUnion('type', [
     code: z.string().optional(),
     codeVerifier: z.string().optional(),
     redirectUri: z.string().optional(),
+    /** ID do cliente OAuth usado no login (muda entre iOS e Android); o hub usa para renovar o token. */
+    clientId: z.string().optional(),
     ckWebAuthToken: z.string().optional(),
   }),
   z.object({ type: z.literal('disconnectCloud') }),

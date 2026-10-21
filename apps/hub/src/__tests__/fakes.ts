@@ -93,13 +93,19 @@ export class FakeBackend implements Backend {
     this.deletedRecordings.push(id);
     this.recordings.delete(id);
   }
+  async listCloudRecordingsBefore(before: string) {
+    return [...this.recordings.values()].filter((r) => r.cloud_file_ref && r.started_at < before);
+  }
+  cloudPatches: CloudPatch[] = [];
   async insertEvent(e: NewEvent) {
     this.events.push(e);
   }
   async getSettings() {
     return this.settings;
   }
-  async updateCloud(_patch: CloudPatch) {}
+  async updateCloud(patch: CloudPatch) {
+    this.cloudPatches.push(patch);
+  }
   async uploadThumbnail(name: string) {
     const p = `${HUB}/${name}`;
     this.thumbnails.push(p);

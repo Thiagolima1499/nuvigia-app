@@ -25,6 +25,8 @@ export interface Backend {
   updateRecording(id: string, patch: RecordingPatch): Promise<void>;
   getRecording(id: string): Promise<RecordingRow | null>;
   deleteRecording(id: string): Promise<void>;
+  /** Gravações já na nuvem com início antes de `before` (retenção). */
+  listCloudRecordingsBefore(before: string, limit: number): Promise<Pick<RecordingRow, 'id' | 'cloud_file_ref' | 'provider' | 'started_at'>[]>;
   insertEvent(e: NewEvent): Promise<void>;
   getSettings(): Promise<SettingsRow | null>;
   updateCloud(patch: CloudPatch): Promise<void>;
@@ -103,6 +105,13 @@ export class SupabaseBackend implements Backend {
 
   async deleteRecording(id: string) {
     check(await this.sb.from('recordings').delete().eq('id', id), 'apagar gravação');
+  }
+
+  async listCloudRecordingsBefore(before: string, limit: number) {
+    return check(
+      await this.sb.from('recordings').select('id, cloud_file_ref, provider, started_at').eq('hub_id', this.hubId).not('cloud_file_ref', 'is', null).lt('started_at', before).order('started_at').limit(limit),
+      'listar gravações antigas',
+    ) as Pick<RecordingRow, 'id' | 'cloud_file_ref' | 'provider' | 'started_at'>[];
   }
 
   async insertEvent(e: NewEvent) {
