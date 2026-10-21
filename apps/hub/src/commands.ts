@@ -5,7 +5,9 @@ import type { Backend } from './backend';
 import type { CameraManager } from './cameras';
 import { HubError } from './cameras';
 import type { CloudControl } from './cloud';
+import type { LinkSigner } from './links';
 import type { OnvifService } from './onvif';
+import type { LocalStore } from './store';
 
 export type CommandDeps = {
   version: string;
@@ -14,7 +16,14 @@ export type CommandDeps = {
   cloud: CloudControl;
   onvif: OnvifService;
   log: Logger;
+  /** Endereço do túnel do hub; sem ele não há HLS nem arquivo pelo hub. */
+  publicUrl?: string;
+  signer?: LinkSigner;
+  store?: LocalStore;
 };
+
+const LINK_TTL_SEC = 15 * 60;
+const tunnelUrl = (base: string, path: string) => `${base.replace(/\/$/, '')}${path}`;
 
 /** Códigos de erro que o app entende; o resto vira "internal". */
 const KNOWN = new Set([
@@ -27,6 +36,8 @@ const KNOWN = new Set([
   'cloud_unavailable',
   'talk_unavailable',
   'recording_not_found',
+  'hls_unavailable',
+  'link_unavailable',
 ]);
 
 export function errorCode(e: unknown): string {
@@ -50,10 +61,36 @@ export async function handleCommand(cmd: HubCommand, d: CommandDeps, emit: (e: H
     // O mudo é só no aparelho; o hub confirma para o app não ficar esperando.
     case 'setMute':
       return { muted: cmd.muted };
-    // Falar pela câmera usa o canal de áudio do WebRTC (etapa 6).
-    case 'startTalk':
+    // A voz vai pelo áudio da própria sessão WebRTC (o go2rtc repassa para a câmera).
+    // Aqui só confirmamos se a câmera tem alto-falante.
+    case 'startTalk': {
+      const cam = d.cameras.list().find((c) => c.id === cmd.cameraId);
+      if (!cam) throw new HubError('camera_not_found');
+      if (!d.cameras.supportsTalk(cmd.cameraId)) throw new HubError('talk_unavailable');
+      return { talking: true };
+    }
     case 'stopTalk':
-      throw new HubError('talk_unavailable');
+      return { talking: false };
+
+    case 'liveHls': {
+      if (!d.publicUrl || !d.signer) throw new HubError('hls_unavailable');
+      if (!d.cameras.has(cmd.cameraId)) throw new HubError('camera_not_found');
+      const { token, expiresAt } = d.signer.sign('hls', cmd.cameraId, LINK_TTL_SEC);
+      return { url: tunnelUrl(d.publicUrl, `/hls/${token}/api/stream.m3u8`), expiresAt };
+    }
+
+    case 'recordingLink': {
+      // 1) arquivo ainda no hub e túnel configurado: toca direto do hub
+      const local = d.store?.getFile(cmd.recordingId);
+      if (local && d.publicUrl && d.signer) {
+        const { token, expiresAt } = d.signer.sign('file', cmd.recordingId, LINK_TTL_SEC);
+        return { url: tunnelUrl(d.publicUrl, `/files/${token}`), expiresAt, kind: 'stream' };
+      }
+      // 2) senão, o link do arquivo no provedor (Drive/OneDrive), aberto no navegador
+      const web = await d.cloud.webLink(cmd.recordingId);
+      if (web) return { url: web, expiresAt: null, kind: 'web' };
+      throw new HubError('link_unavailable');
+    }
 
     case 'updateSettings': {
       const s = cmd.settings;

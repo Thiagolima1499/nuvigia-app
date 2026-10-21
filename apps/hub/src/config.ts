@@ -22,6 +22,11 @@ const Env = z.object({
   HTTP_HOST: z.string().default('0.0.0.0'),
   HTTP_PORT: z.coerce.number().int().min(1).max(65535).default(8787),
   MDNS: bool.default(true),
+  /**
+   * Endereço público do hub por um túnel (ex.: Cloudflare Tunnel apontando para HTTP_PORT).
+   * Opcional: habilita o plano B do ao vivo (HLS) e assistir gravações que ainda estão no hub.
+   */
+  HUB_PUBLIC_URL: z.url().optional(),
   /** Duração de cada arquivo na gravação contínua. */
   SEGMENT_SECONDS: z.coerce.number().int().min(30).max(3600).default(300),
   /** Duração do clipe gravado após detectar movimento. */
@@ -44,7 +49,9 @@ export type Config = z.infer<typeof Env> & { version: string };
 export const HUB_VERSION = '0.1.0';
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
-  const parsed = Env.safeParse(env);
+  // linha vazia no .env (ex.: HUB_PUBLIC_URL=) vale como "não definido"
+  const clean = Object.fromEntries(Object.entries(env).filter(([, v]) => v !== undefined && v.trim() !== ''));
+  const parsed = Env.safeParse(clean);
   if (!parsed.success) {
     const lines = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`);
     throw new Error(`Configuração inválida do hub:\n${lines.join('\n')}`);

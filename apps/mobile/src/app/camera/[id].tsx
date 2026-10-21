@@ -6,13 +6,14 @@ import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Button, Heading, Icon, IconButton, LiveBadge, PulseDot, Screen, Tag, Text, useToast } from '@/components/ui';
 import { formatClock, formatDayMonth, formatElapsed, formatTime } from '@/data/format';
 import { FeedPlaceholder } from '@/features/cameras/Feed';
+import { LiveVideo } from '@/features/live/LiveVideo';
 import { StateCard } from '@/features/common/StateCard';
 import { useInteraction } from '@/hooks/useInteraction';
 import { useNow } from '@/hooks/useNow';
 import { useAppStore, useCloudInfo, type UiEvent } from '@/state/store';
 import { accent, colors, focusRing, maxWidth, neutral, radius, sage, space } from '@/theme/theme';
 
-/** Tela Ao vivo (stream simulado nesta etapa; WebRTC/HLS na etapa 6). */
+/** Tela Ao vivo. No modo real, vídeo por WebRTC (ou HLS pelo túnel); no modo demonstração, imagem simulada. */
 export default function LiveScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -31,6 +32,8 @@ export default function LiveScreen() {
   const prov = useCloudInfo();
   const allEvents = useAppStore((s) => s.events);
   const snapshot = useAppStore((s) => s.snapshot);
+  const live = useAppStore((s) => s.mode === 'live');
+  const remote = useAppStore((s) => s.remote);
   // altura do vídeo: min(62vh, 125vw), mínimo 220px
   const videoHeight = Math.max(220, Math.min(height * 0.62, width * 1.25));
 
@@ -46,6 +49,21 @@ export default function LiveScreen() {
   }
 
   const elapsed = cam.recStartedAt ? (now.getTime() - new Date(cam.recStartedAt).getTime()) / 1000 : 0;
+
+  const toggleTalk = async () => {
+    if (!live || !remote) return setTalking((t) => !t);
+    if (talking) {
+      setTalking(false);
+      remote.send({ type: 'stopTalk', cameraId: cam.id }).catch(() => undefined);
+      return;
+    }
+    try {
+      await remote.send({ type: 'startTalk', cameraId: cam.id });
+      setTalking(true);
+    } catch (e) {
+      toast.show(e instanceof Error && e.message === 'talk_unavailable' ? 'Esta câmera não tem alto-falante.' : 'Não foi possível ligar o microfone.');
+    }
+  };
 
   const toggleRec = () => {
     if (!prov) return openCloudDialog();
@@ -65,7 +83,7 @@ export default function LiveScreen() {
       >
         {cam.online ? (
           <>
-            <FeedPlaceholder cx="65%" cy="35%" glow={neutral[600]} radius="60%" />
+            {live ? <LiveVideo cameraId={cam.id} muted={muted} talking={talking} /> : <FeedPlaceholder cx="65%" cy="35%" glow={neutral[600]} radius="60%" />}
             <View style={styles.badges}>
               <LiveBadge label={`AO VIVO · ${quality}`} style={styles.bigBadge} />
               {cam.recording ? (
@@ -136,7 +154,7 @@ export default function LiveScreen() {
           label={talking ? 'Falando…' : 'Falar'}
           active={talking}
           activeBg={sage[300]}
-          onPress={() => setTalking((t) => !t)}
+          onPress={() => void toggleTalk()}
           disabled={!cam.online}
           a11yState={{ checked: talking }}
           a11yLabel="Falar pela câmera"

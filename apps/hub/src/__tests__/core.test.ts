@@ -47,6 +47,10 @@ describe('config', () => {
     expect(c.MDNS).toBe(true);
   });
 
+  it('linha vazia no .env vale como não definida', () => {
+    expect(loadConfig({ ...base, HUB_PUBLIC_URL: '', HTTP_PORT: '' }).HUB_PUBLIC_URL).toBeUndefined();
+  });
+
   it('explica o que falta', () => {
     expect(() => loadConfig({})).toThrow(/SUPABASE_URL/);
   });

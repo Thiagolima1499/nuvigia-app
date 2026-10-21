@@ -44,6 +44,9 @@ class MemProvider implements CloudProvider {
   async getQuota() {
     return { usedBytes: 1000, totalBytes: 15_000 };
   }
+  async webLink(ref: string) {
+    return `https://drive.test/${ref}`;
+  }
 }
 
 const settingsRow = (patch: Partial<SettingsRow> = {}): SettingsRow => ({

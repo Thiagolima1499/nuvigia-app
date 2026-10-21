@@ -7,13 +7,14 @@ import { Heading, Icon, IconButton, ProgressBar, Screen, Tag, Text } from '@/com
 import { formatDuration, formatElapsed, formatWhen } from '@/data/format';
 import { PROVIDERS } from '@/data/providers';
 import { FeedPlaceholder } from '@/features/cameras/Feed';
+import { LivePlayback } from '@/features/live/LivePlayback';
 import { StateCard } from '@/features/common/StateCard';
 import { useAppStore } from '@/state/store';
 import { colors, maxWidth, neutral, radius, space } from '@/theme/theme';
 
 /**
  * Player de gravação (não desenhado no hand-off; segue o padrão da tela Ao vivo).
- * Reprodução simulada; o vídeo real (expo-video) entra junto com a nuvem.
+ * No modo real toca pelo hub ou abre no provedor; no modo demonstração, simula.
  */
 export default function RecordingPlayer() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,6 +22,7 @@ export default function RecordingPlayer() {
   const { height, width } = useWindowDimensions();
   const rec = useAppStore((s) => s.recordings.find((r) => r.id === id));
   const cam = useAppStore((s) => s.cameras.find((c) => c.id === rec?.cameraId));
+  const live = useAppStore((s) => s.mode === 'live');
   const [playing, setPlaying] = useState(false);
   const [pos, setPos] = useState(0);
   const back = () => (router.canGoBack() ? router.back() : router.replace('/gravacoes'));
@@ -54,31 +56,37 @@ export default function RecordingPlayer() {
         <StateCard title="Gravação não encontrada" body="Ela pode ter sido apagada da nuvem." actionLabel="Voltar" onAction={back} />
       ) : (
         <>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={playing ? 'Pausar' : 'Reproduzir'}
-            onPress={() => {
-              if (pos >= duration) setPos(0);
-              setPlaying((p) => !p);
-            }}
-            style={[styles.video, { height: videoHeight }]}
-          >
-            <FeedPlaceholder cx="65%" cy="35%" glow={neutral[600]} radius="60%" />
-            <View style={styles.playCircle}>
-              <Icon icon={playing ? Pause : Play} size={26} color={neutral[100]} />
+          {live ? (
+            <LivePlayback rec={rec} height={videoHeight} />
+          ) : (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={playing ? 'Pausar' : 'Reproduzir'}
+              onPress={() => {
+                if (pos >= duration) setPos(0);
+                setPlaying((p) => !p);
+              }}
+              style={[styles.video, { height: videoHeight }]}
+            >
+              <FeedPlaceholder cx="65%" cy="35%" glow={neutral[600]} radius="60%" />
+              <View style={styles.playCircle}>
+                <Icon icon={playing ? Pause : Play} size={26} color={neutral[100]} />
+              </View>
+            </Pressable>
+          )}
+          {live ? null : (
+            <View style={styles.timeline}>
+              <ProgressBar value={duration ? (pos / duration) * 100 : 0} height={6} track={neutral[300]} fill={colors.accent} />
+              <View style={styles.times}>
+                <Text size={12} color={neutral[700]} tabular>
+                  {formatElapsed(pos)}
+                </Text>
+                <Text size={12} color={neutral[700]} tabular>
+                  {formatElapsed(duration)}
+                </Text>
+              </View>
             </View>
-          </Pressable>
-          <View style={styles.timeline}>
-            <ProgressBar value={duration ? (pos / duration) * 100 : 0} height={6} track={neutral[300]} fill={colors.accent} />
-            <View style={styles.times}>
-              <Text size={12} color={neutral[700]} tabular>
-                {formatElapsed(pos)}
-              </Text>
-              <Text size={12} color={neutral[700]} tabular>
-                {formatElapsed(duration)}
-              </Text>
-            </View>
-          </View>
+          )}
           <View style={styles.info}>
             {rec.status === 'done' ? (
               <Tag label={`No ${PROVIDERS[rec.provider ?? 'google'].short}`} variant="accent2" />

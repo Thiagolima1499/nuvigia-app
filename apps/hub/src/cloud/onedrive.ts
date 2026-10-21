@@ -104,6 +104,11 @@ export class OneDrive implements CloudProvider {
     return deleteFilesBefore(this, cutoff, files);
   }
 
+  async webLink(ref: string) {
+    const item = await this.json<{ webUrl?: string }>(`${GRAPH}/me/drive/items/${encodeURIComponent(ref)}?$select=webUrl`);
+    return item.webUrl ?? null;
+  }
+
   async getQuota() {
     const d = await this.json<{ quota?: { used?: number; total?: number } }>(`${GRAPH}/me/drive?$select=quota`);
     return { usedBytes: d.quota?.used ?? null, totalBytes: d.quota?.total ?? null };

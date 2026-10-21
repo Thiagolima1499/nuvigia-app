@@ -15,6 +15,8 @@ export type CloudPatch = Partial<Pick<SettingsRow, 'cloud_provider' | 'cloud_con
 export interface Backend {
   readonly hubId: string;
   getOwnerId(): Promise<string | null>;
+  /** Endereço do túnel (ou null), para o app saber se há plano B por HLS. */
+  setPublicUrl(url: string | null): Promise<void>;
   createPairingCode(): Promise<{ code: string; expiresAt: string }>;
   heartbeat(version: string): Promise<void>;
   listCameras(): Promise<CameraRow[]>;
@@ -62,6 +64,10 @@ export class SupabaseBackend implements Backend {
     const row = check(await this.sb.from('hubs').select('owner_id').eq('id', this.hubId).maybeSingle<{ owner_id: string | null }>(), 'ler hub');
     if (!row) throw new HubRemovedError();
     return row.owner_id;
+  }
+
+  async setPublicUrl(url: string | null) {
+    check(await this.sb.from('hubs').update({ public_url: url }).eq('id', this.hubId), 'salvar endereço público');
   }
 
   async createPairingCode() {

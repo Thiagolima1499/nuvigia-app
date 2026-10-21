@@ -318,9 +318,9 @@ describe('comandos', () => {
     ]);
   });
 
-  it('falar pela câmera ainda não disponível', async () => {
+  it('falar pela câmera: câmera desconhecida', async () => {
     const { deps: d } = deps();
-    await expect(handleCommand({ type: 'startTalk', cameraId: 'x' }, d, () => undefined)).rejects.toThrow('talk_unavailable');
+    await expect(handleCommand({ type: 'startTalk', cameraId: 'x' }, d, () => undefined)).rejects.toThrow('camera_not_found');
   });
 
   it('canal: valida, responde e esconde erros internos', async () => {

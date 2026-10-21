@@ -39,6 +39,8 @@ export interface CloudProvider {
    */
   deleteOlderThan(cutoff: Date, files: { ref: string; startedAt: string }[]): Promise<string[]>;
   getQuota(): Promise<Quota>;
+  /** Endereço para a pessoa abrir o arquivo no site/app do provedor (null se não houver). */
+  webLink(ref: string): Promise<string | null>;
 }
 
 /** Erro que vale tentar de novo mais tarde (rede, 429, 5xx). */

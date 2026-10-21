@@ -72,6 +72,14 @@ export class CameraManager {
     return this.cams.has(id);
   }
 
+  isOnline(id: string) {
+    return this.cams.get(id)?.online ?? false;
+  }
+
+  supportsTalk(id: string) {
+    return this.cams.get(id)?.row.supports_talk ?? false;
+  }
+
   knownIps(): Set<string> {
     return new Set([...this.cams.values()].map((r) => r.row.ip).filter(Boolean));
   }

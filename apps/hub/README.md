@@ -64,6 +64,26 @@ cd apps/hub
 node --env-file=.env --import tsx src/index.ts
 ```
 
+## Ao vivo fora de casa
+
+O app abre o vídeo por **WebRTC**. A oferta vai pelo canal do Supabase até o hub, que a entrega ao go2rtc. O vídeo segue direto entre o celular e o hub, sem abrir portas no roteador:
+
+1. **STUN** (padrão): funciona na maioria das redes de casa e de celular.
+2. **TURN**: para redes mais fechadas (algumas operadoras e redes corporativas). Suba um coturn numa VM com IP público usando [infra/coturn/turnserver.conf](../../infra/coturn/turnserver.conf) e configure no Supabase:
+   ```bash
+   supabase secrets set TURN_SECRET=<o mesmo static-auth-secret> \
+     TURN_URLS="turn:turn.seu-dominio.com.br:3478?transport=udp,turns:turn.seu-dominio.com.br:5349?transport=tcp"
+   supabase functions deploy turn-credentials
+   ```
+   A função `turn-credentials` entrega ao app uma senha de TURN que vale 1 hora.
+3. **Plano B por HLS (opcional)**: se o hub tiver um endereço público por túnel (por exemplo, Cloudflare Tunnel apontando para `http://localhost:8787`), defina `HUB_PUBLIC_URL` no `.env`.
+   Quando o WebRTC não conecta, o app toca o HLS por esse endereço. Com o túnel também dá para assistir no app as gravações que ainda estão no hub.
+   Pelo túnel só passam links assinados que valem 15 minutos (`/hls/<token>/…` e `/files/<token>`). A página de pareamento e a API do go2rtc continuam só na rede de casa.
+
+Sem túnel, as gravações abrem no site do Google Drive ou do OneDrive. No iCloud, elas ficam visíveis pelo CloudKit.
+
+**Falar pela câmera**: o áudio do microfone vai na mesma sessão WebRTC e o go2rtc repassa para a câmera. Funciona em câmeras com alto-falante e áudio de retorno por ONVIF ou RTSP, como a maioria das Tapo e Imou.
+
 ## Desvincular
 
 Quando o dono remove o hub no app, o hub percebe no próximo batimento (30 s), apaga a identidade e reinicia mostrando um novo código.
@@ -93,5 +113,6 @@ Os testes usam processos e servidores falsos (ffmpeg, go2rtc, ONVIF, Supabase), 
 | `MAX_MANUAL_SECONDS` | 3600 | Limite da gravação manual |
 | `LOCAL_KEEP_DAYS` | 3 | Dias que um arquivo já enviado fica no hub |
 | `MDNS` | true | Anunciar na rede local |
+| `HUB_PUBLIC_URL` | — | Endereço do túnel (plano B por HLS e gravações pelo hub) |
 | `CLOUDKIT_CONTAINER`, `CLOUDKIT_API_TOKEN`, `CLOUDKIT_ENV` | `iCloud.br.com.nuvigia`, —, development | iCloud (CloudKit Web Services) |
 | `LOG_LEVEL` | info | Nível de log |

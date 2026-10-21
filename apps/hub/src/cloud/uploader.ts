@@ -131,6 +131,13 @@ export class Uploader implements CloudControl {
     this.d.log.info('nuvem desconectada');
   }
 
+  async webLink(recordingId: string) {
+    if (!this.provider) return null;
+    const rec = await this.d.backend.getRecording(recordingId);
+    if (!rec?.cloud_file_ref || rec.provider !== this.provider.id) return null;
+    return this.provider.webLink(rec.cloud_file_ref).catch(() => null);
+  }
+
   async retry(recordingId: string) {
     if (!this.provider) throw new Error('cloud_unavailable');
     const f = this.d.store.getFile(recordingId);

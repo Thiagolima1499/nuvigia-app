@@ -25,6 +25,8 @@ pnpm mobile          # abre o Expo; leia o QR code com o app Expo Go no celular
 
 No navegador: `pnpm --filter @nuvigia/mobile web`.
 
+O Expo Go serve para o modo demonstração. O vídeo ao vivo de verdade usa WebRTC (`react-native-webrtc`), que precisa do app instalado: um build de desenvolvimento (`npx expo run:ios` / `npx expo run:android`, ou `eas build --profile development`).
+
 O app abre na tela **Câmeras**, com dados simulados. O **catálogo de componentes** e o simulador de estados (sem câmeras, hub inacessível, sem nuvem, falha de envio) abrem com um toque longo em “Nuvigia” no topo da tela Câmeras, ou pelo endereço `/catalogo` no navegador.
 
 ## Verificações
@@ -41,7 +43,7 @@ pnpm test
 2. **Telas com dados simulados** (Câmeras, Ao vivo, Gravações, Ajustes, Adicionar câmera, diálogo da nuvem).
 3. Supabase: esquema, RLS, login e canais Realtime.
 4. **Hub:** pareamento, ONVIF, go2rtc, gravação e detecção de movimento ([apps/hub](apps/hub/README.md)).
-5. **Nuvem:** Google Drive, OneDrive e iCloud ([como configurar](docs/configurar-nuvem.md)). ← atual
-6. Ao vivo remoto: WebRTC, TURN e fallback HLS.
+5. **Nuvem:** Google Drive, OneDrive e iCloud ([como configurar](docs/configurar-nuvem.md)).
+6. **Ao vivo remoto:** WebRTC pelo Supabase Realtime, TURN (coturn) e plano B por HLS ([detalhes](apps/hub/README.md#ao-vivo-fora-de-casa)). ← atual
 7. Notificações de movimento.
 8. Qualidade: testes, e2e com Maestro e builds EAS.
