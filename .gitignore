@@ -158,3 +158,6 @@ android/
 .env.*
 !.env.example
 .DS_Store
+
+# Hub: dados locais (banco cifrado e gravações)
+apps/hub/data/

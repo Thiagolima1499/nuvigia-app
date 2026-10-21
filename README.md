@@ -38,9 +38,9 @@ pnpm test
 ## Etapas
 
 1. **Base:** monorepo, lint, TypeScript estrito, tema com os tokens, fontes, componentes base e catálogo.
-2. **Telas com dados simulados** (Câmeras, Ao vivo, Gravações, Ajustes, Adicionar câmera, diálogo da nuvem). ← atual
+2. **Telas com dados simulados** (Câmeras, Ao vivo, Gravações, Ajustes, Adicionar câmera, diálogo da nuvem).
 3. Supabase: esquema, RLS, login e canais Realtime.
-4. Hub: pareamento, ONVIF, go2rtc, gravação.
+4. **Hub:** pareamento, ONVIF, go2rtc, gravação e detecção de movimento ([apps/hub](apps/hub/README.md)). ← atual
 5. Nuvem: Google Drive, OneDrive e iCloud.
 6. Ao vivo remoto: WebRTC, TURN e fallback HLS.
 7. Notificações de movimento.
