@@ -11,10 +11,6 @@ export const config = {
   googleClientIdWeb: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB ?? '',
   /** OAuth do OneDrive (registro de app no Microsoft Entra, cliente público). */
   microsoftClientId: process.env.EXPO_PUBLIC_MICROSOFT_CLIENT_ID ?? '',
-  /** CloudKit Web Services (container iCloud.br.com.nuvigia). */
-  cloudKitContainer: process.env.EXPO_PUBLIC_CLOUDKIT_CONTAINER ?? 'iCloud.br.com.nuvigia',
-  cloudKitApiToken: process.env.EXPO_PUBLIC_CLOUDKIT_API_TOKEN ?? '',
-  cloudKitEnvironment: (process.env.EXPO_PUBLIC_CLOUDKIT_ENV ?? 'development') as 'development' | 'production',
 };
 
 export const isDemo = !config.supabaseUrl || !config.supabaseAnonKey;

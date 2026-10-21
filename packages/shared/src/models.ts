@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 /** Modelos de dados do README do hand-off ("Estado e dados"). */
 
-export const CloudProviderId = z.enum(['google', 'onedrive', 'icloud']);
+export const CloudProviderId = z.enum(['google', 'onedrive']);
 export type CloudProviderId = z.infer<typeof CloudProviderId>;
 
 export const RecordMode = z.enum(['motion', 'continuous']);
@@ -40,7 +40,7 @@ export const Recording = z.object({
   durationSec: z.number().int().nonnegative(),
   kind: z.enum(['video', 'photo']),
   provider: CloudProviderId.optional(),
-  /** Antes `driveFileId`: referência do arquivo no provedor (Drive/OneDrive/CloudKit). */
+  /** Antes `driveFileId`: referência do arquivo no provedor (Drive/OneDrive). */
   cloudFileRef: z.string().optional(),
   uploadProgress: z.number().min(0).max(100),
   status: RecordingStatus,

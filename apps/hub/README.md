@@ -1,7 +1,7 @@
 # Hub Nuvigia
 
 Serviço Node.js (TypeScript) que fica ligado 24h na rede de casa, num Raspberry Pi 4/5, mini PC ou NAS com Linux.
-Ele conversa com as câmeras Wi‑Fi, grava, detecta movimento e (etapa 5) envia para Google Drive, OneDrive ou iCloud.
+Ele conversa com as câmeras Wi‑Fi, grava, detecta movimento e envia para Google Drive ou OneDrive.
 O app fala com o hub pelo Supabase Realtime, então **nenhuma porta é aberta no roteador**.
 
 ```
@@ -80,7 +80,7 @@ O app abre o vídeo por **WebRTC**. A oferta vai pelo canal do Supabase até o h
    Quando o WebRTC não conecta, o app toca o HLS por esse endereço. Com o túnel também dá para assistir no app as gravações que ainda estão no hub.
    Pelo túnel só passam links assinados que valem 15 minutos (`/hls/<token>/…` e `/files/<token>`). A página de pareamento e a API do go2rtc continuam só na rede de casa.
 
-Sem túnel, as gravações abrem no site do Google Drive ou do OneDrive. No iCloud, elas ficam visíveis pelo CloudKit.
+Sem túnel, as gravações abrem no site do Google Drive ou do OneDrive.
 
 **Falar pela câmera**: o áudio do microfone vai na mesma sessão WebRTC e o go2rtc repassa para a câmera. Funciona em câmeras com alto-falante e áudio de retorno por ONVIF ou RTSP, como a maioria das Tapo e Imou.
 
@@ -114,5 +114,4 @@ Os testes usam processos e servidores falsos (ffmpeg, go2rtc, ONVIF, Supabase), 
 | `LOCAL_KEEP_DAYS` | 3 | Dias que um arquivo já enviado fica no hub |
 | `MDNS` | true | Anunciar na rede local |
 | `HUB_PUBLIC_URL` | — | Endereço do túnel (plano B por HLS e gravações pelo hub) |
-| `CLOUDKIT_CONTAINER`, `CLOUDKIT_API_TOKEN`, `CLOUDKIT_ENV` | `iCloud.br.com.nuvigia`, —, development | iCloud (CloudKit Web Services) |
 | `LOG_LEVEL` | info | Nível de log |

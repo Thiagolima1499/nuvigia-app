@@ -1,0 +1,58 @@
+# Fluxo principal no modo demonstração: Adicionar câmera → Ao vivo → Gravar → Gravações.
+# Rodar com o app instalado (build de desenvolvimento ou preview) num emulador/aparelho:
+#   maestro test apps/mobile/.maestro/fluxo-principal.yaml
+appId: br.com.nuvigia.app
+name: Adicionar câmera, gravar e ver em Gravações
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Minhas câmeras"
+    timeout: 20000
+
+# Adicionar câmera
+- tapOn:
+    id: "add-camera"
+- assertVisible: "Procurando câmeras na sua rede"
+- extendedWaitUntil:
+    visible:
+      id: "device-192.168.0.41"
+    timeout: 10000
+- tapOn:
+    id: "device-192.168.0.41"
+- tapOn:
+    id: "input-name"
+- eraseText
+- inputText: "Portão E2E"
+- hideKeyboard
+- tapOn:
+    id: "input-wifi-pass"
+- inputText: "senha-forte-123"
+- hideKeyboard
+- tapOn:
+    id: "connect-camera"
+- extendedWaitUntil:
+    visible:
+      id: "see-live"
+    timeout: 10000
+- tapOn:
+    id: "see-live"
+
+# Ao vivo → Gravar
+- assertVisible: "Portão E2E"
+- assertVisible: "Gravar no Google Drive"
+- tapOn:
+    id: "record-button"
+- assertVisible: "Parar e salvar na nuvem"
+- tapOn:
+    id: "record-button"
+- assertVisible: "Gravação enviada ao Google Drive"
+
+# Gravações
+- tapOn:
+    id: "back"
+- tapOn:
+    id: "tab-recordings"
+- assertVisible: "Portão E2E"
+- assertVisible:
+    text: "Enviando.*"

@@ -72,7 +72,7 @@ export function CloudDialog() {
         ))}
       </RadioGroup>
       <DialogBody>
-        {pick === 'icloud' ? 'Você vai entrar com sua Conta Apple. ' : ''}O Nuvigia vai criar a pasta “Nuvigia” no {p.name} e salvar nela apenas vídeos e
+        O Nuvigia vai criar a pasta “Nuvigia” no {p.name} e salvar nela apenas vídeos e
         fotos das suas câmeras.
       </DialogBody>
     </BottomSheet>

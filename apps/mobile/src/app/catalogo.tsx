@@ -36,7 +36,6 @@ const QUALITIES = ['720p', '1080p', '2K'] as const;
 const PROVIDERS = [
   { key: 'google', name: 'Google Drive', note: '15 GB grátis', cta: 'Entrar com Google' },
   { key: 'onedrive', name: 'OneDrive', note: '5 GB grátis', cta: 'Entrar com Microsoft' },
-  { key: 'icloud', name: 'iCloud Drive', note: '5 GB grátis', cta: 'Entrar com Apple' },
 ] as const;
 type ProviderKey = (typeof PROVIDERS)[number]['key'];
 
@@ -219,7 +218,7 @@ export default function Catalogo() {
             Escolha onde salvar
           </Heading>
           <Text size={13} color={accent[900]} style={{ lineHeight: 19 }}>
-            Conecte Google Drive, OneDrive ou iCloud. Sem a nuvem, as gravações ficam só no cartão de memória das câmeras.
+            Conecte Google Drive ou OneDrive. Sem a nuvem, as gravações ficam só no cartão de memória das câmeras.
           </Text>
           <Button label="Conectar nuvem" onPress={() => setDialog(true)} />
         </Card>
@@ -284,7 +283,7 @@ export default function Catalogo() {
           ))}
         </RadioGroup>
         <DialogBody>
-          {pick === 'icloud' ? 'Você vai entrar com sua Conta Apple. ' : ''}O Nuvigia vai criar a pasta “Nuvigia” no {picked.name} e salvar nela apenas
+          O Nuvigia vai criar a pasta “Nuvigia” no {picked.name} e salvar nela apenas
           vídeos e fotos das suas câmeras.
         </DialogBody>
       </BottomSheet>

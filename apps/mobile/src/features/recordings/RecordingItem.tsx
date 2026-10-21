@@ -10,7 +10,7 @@ export type RecordingItemProps = {
   subtitle: string;
   status: 'uploading' | 'done' | 'failed' | 'recording';
   progress: number;
-  /** "Drive", "OneDrive", "iCloud". */
+  /** "Drive" ou "OneDrive". */
   providerShort: string | null;
   width: number;
   onPress: () => void;

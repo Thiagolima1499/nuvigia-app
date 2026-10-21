@@ -31,10 +31,10 @@ describe('store', () => {
   });
 
   it('diálogo abre com o provedor pré-selecionado e conecta', () => {
-    get().openCloudDialog('icloud');
-    expect(get().cloudDialog).toEqual({ open: true, pick: 'icloud' });
-    get().connectCloud('icloud');
-    expect(get().cloud).toBe('icloud');
+    get().openCloudDialog('onedrive');
+    expect(get().cloudDialog).toEqual({ open: true, pick: 'onedrive' });
+    get().connectCloud('onedrive');
+    expect(get().cloud).toBe('onedrive');
     expect(get().cloudDialog.open).toBe(false);
   });
 

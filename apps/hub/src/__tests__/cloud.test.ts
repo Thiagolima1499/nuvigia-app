@@ -6,11 +6,10 @@ import { describe, expect, it } from 'vitest';
 
 import type { ConnectCloud } from '../cloud';
 import { GoogleDrive } from '../cloud/google';
-import { ICloud, type CloudKitToken } from '../cloud/icloud';
 import type { OAuthToken, TokenStore } from '../cloud/oauth';
 import { OneDrive } from '../cloud/onedrive';
 import { AuthExpiredError, type CloudProvider } from '../cloud/provider';
-import { FakeCloudKit, FakeGoogle, FakeGraph, type FakeServer } from './cloudFakes';
+import { FakeGoogle, FakeGraph, type FakeServer } from './cloudFakes';
 
 const memTokens = <T,>(): TokenStore<T> & { value: T | null } => {
   const s = { value: null as T | null, get: () => s.value, set: (t: T) => void (s.value = t) };
@@ -64,18 +63,7 @@ const cases: Case[] = [
     resumable: true,
     hasQuota: true,
   },
-  {
-    name: 'iCloud (CloudKit)',
-    make: () => {
-      const server = new FakeCloudKit();
-      const tokens = memTokens<CloudKitToken>();
-      return { server, tokens: tokens as never, provider: new ICloud({ container: 'iCloud.br.com.nuvigia', apiToken: 'api-token', environment: 'development' }, tokens, server.fetch) };
-    },
-    login: { type: 'connectCloud', provider: 'icloud', ckWebAuthToken: 'web+auth/token' },
-    account: 'Ana Souza',
-    resumable: false,
-    hasQuota: false,
-  },
+
 ];
 
 // Mesmo roteiro para os três provedores.
@@ -116,7 +104,7 @@ describe.each(cases)('contrato CloudProvider: $name', (c) => {
 
   it('recusa login inválido', async () => {
     const { provider } = c.make();
-    const bad = c.login.provider === 'icloud' ? { ...c.login, ckWebAuthToken: 'outro' } : { ...c.login, code: 'errado' };
+    const bad = { ...c.login, code: 'errado' };
     await expect(provider.connect(bad)).rejects.toBeInstanceOf(AuthExpiredError);
   });
 
@@ -161,19 +149,5 @@ describe('provedores: detalhes', () => {
     const { path, data } = sample(1000);
     const ref = await p.uploadResumable({ filePath: path, size: data.length, folderRef: folder, name: 'a.mp4', mimeType: 'video/mp4' });
     expect(server.files.get(ref)?.name).toBe('Portão/2026-10-21/a.mp4');
-  });
-
-  it('iCloud: guarda o token renovado pelo CloudKit', async () => {
-    const server = new FakeCloudKit();
-    const tokens = memTokens<CloudKitToken>();
-    const p = new ICloud({ container: 'iCloud.br.com.nuvigia', apiToken: 'api-token', environment: 'development' }, tokens, server.fetch);
-    server.rotateTo = 'girado';
-    await p.connect({ type: 'connectCloud', provider: 'icloud', ckWebAuthToken: 'web+auth/token' });
-    expect(tokens.value).toEqual({ webAuthToken: 'girado' });
-  });
-
-  it('iCloud: sem token de API configurado explica o problema', async () => {
-    const p = new ICloud({ container: 'c', apiToken: '', environment: 'development' }, memTokens<CloudKitToken>(), new FakeCloudKit().fetch);
-    await expect(p.connect({ type: 'connectCloud', provider: 'icloud', ckWebAuthToken: 't' })).rejects.toThrow(/CLOUDKIT_API_TOKEN/);
   });
 });
