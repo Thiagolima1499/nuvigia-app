@@ -4,13 +4,13 @@ import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Heading, ProgressBar, Screen, Segmented, Text } from '@/components/ui';
-import { formatBytes, formatDuration, formatWhen } from '@/data/format';
+import { formatDuration, formatWhen, quotaLabel } from '@/data/format';
 import { PROVIDERS } from '@/data/providers';
 import { NoCloudCard } from '@/features/cloud/CloudStrip';
 import { StateCard } from '@/features/common/StateCard';
 import { RecordingItem } from '@/features/recordings/RecordingItem';
 import { useAutoFillGrid } from '@/hooks/useGrid';
-import { useAppStore } from '@/state/store';
+import { useAppStore, useCloudInfo } from '@/state/store';
 import { maxWidth, radius, sage, space } from '@/theme/theme';
 
 const ALL = 'Todas';
@@ -20,12 +20,11 @@ export default function RecordingsScreen() {
   const router = useRouter();
   const cameras = useAppStore((s) => s.cameras);
   const recordings = useAppStore((s) => s.recordings);
-  const cloud = useAppStore((s) => s.cloud);
   const openCloudDialog = useAppStore((s) => s.openCloudDialog);
   const retryUpload = useAppStore((s) => s.retryUpload);
   const [filter, setFilter] = useState<string>(ALL);
   const { itemWidth } = useAutoFillGrid(maxWidth.cameras, 320, GAP);
-  const prov = cloud ? PROVIDERS[cloud] : null;
+  const prov = useCloudInfo();
 
   const camName = useMemo(() => new Map(cameras.map((c) => [c.id, c.name])), [cameras]);
   // Filtro: Todas + câmeras que têm gravações, na ordem da lista de câmeras.
@@ -35,7 +34,7 @@ export default function RecordingsScreen() {
   }, [cameras, recordings]);
   const activeFilter = options.includes(filter) ? filter : ALL;
   const visible = recordings.filter((r) => activeFilter === ALL || camName.get(r.cameraId) === activeFilter);
-  const pct = prov ? (prov.usedBytes / prov.totalBytes) * 100 : 0;
+  const pct = prov?.totalBytes ? (prov.usedBytes / prov.totalBytes) * 100 : 0;
 
   return (
     <Screen maxWidth={maxWidth.cameras} bottomInset={110} testID="screen-recordings" contentStyle={styles.content}>
@@ -50,10 +49,10 @@ export default function RecordingsScreen() {
               {prov.name}
             </Text>
             <Text size={13} color={sage[800]}>
-              {formatBytes(prov.usedBytes)} de {formatBytes(prov.totalBytes)}
+              {quotaLabel(prov.usedBytes, prov.totalBytes)}
             </Text>
           </View>
-          <ProgressBar value={pct} track={sage[100]} fill={sage[600]} />
+          {prov.totalBytes ? <ProgressBar value={pct} track={sage[100]} fill={sage[600]} /> : null}
           <Text size={12} color={sage[800]}>
             Pasta: {prov.folder}
           </Text>

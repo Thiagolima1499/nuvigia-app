@@ -4,6 +4,7 @@ import { Camera, CameraEvent, Settings } from './models';
 
 /** Comandos do app para o hub (canal Realtime de comandos). */
 export const HubCommand = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('ping') }),
   z.object({ type: z.literal('startRecording'), cameraId: z.string() }),
   z.object({ type: z.literal('stopRecording'), cameraId: z.string() }),
   z.object({ type: z.literal('snapshot'), cameraId: z.string() }),
@@ -22,6 +23,18 @@ export const HubCommand = z.discriminatedUnion('type', [
     password: z.string().optional(),
     uploadToCloud: z.boolean(),
   }),
+  z.object({ type: z.literal('removeCamera'), cameraId: z.string() }),
+  z.object({ type: z.literal('retryUpload'), recordingId: z.string() }),
+  /** Entrega ao hub o resultado do login feito no app (código OAuth + PKCE ou token do CloudKit). */
+  z.object({
+    type: z.literal('connectCloud'),
+    provider: z.enum(['google', 'onedrive', 'icloud']),
+    code: z.string().optional(),
+    codeVerifier: z.string().optional(),
+    redirectUri: z.string().optional(),
+    ckWebAuthToken: z.string().optional(),
+  }),
+  z.object({ type: z.literal('disconnectCloud') }),
 ]);
 export type HubCommand = z.infer<typeof HubCommand>;
 
@@ -33,7 +46,13 @@ export const HubEvent = z.discriminatedUnion('type', [
   z.object({ type: z.literal('uploadProgress'), recordingId: z.string(), progress: z.number().min(0).max(100) }),
   z.object({ type: z.literal('uploadFailed'), recordingId: z.string(), reason: z.string() }),
   z.object({ type: z.literal('cameraEvent'), event: CameraEvent }),
-  z.object({ type: z.literal('cameraDiscovered'), model: z.string(), ip: z.string() }),
+  z.object({ type: z.literal('cameraDiscovered'), model: z.string(), ip: z.string(), needsCredentials: z.boolean().optional() }),
+  z.object({ type: z.literal('discoveryFinished'), count: z.number() }),
+  z.object({ type: z.literal('addCameraProgress'), step: z.number().int().min(0).max(3) }),
   z.object({ type: z.literal('cameraAdded'), camera: Camera }),
 ]);
 export type HubEvent = z.infer<typeof HubEvent>;
+
+/** Comando como trafega no canal: com id para casar a resposta. */
+export const CommandEnvelope = z.object({ requestId: z.string().min(1), command: HubCommand });
+export type CommandEnvelope = z.infer<typeof CommandEnvelope>;

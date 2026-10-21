@@ -29,3 +29,14 @@ describe('mensagens', () => {
     expect(HubEvent.parse({ type: 'uploadProgress', recordingId: 'r1', progress: 64 })).toMatchObject({ progress: 64 });
   });
 });
+
+import { parsePairingPayload } from './index';
+
+describe('pareamento', () => {
+  it('aceita dígitos ou o link do QR', () => {
+    expect(parsePairingPayload(' 123456 ')).toBe('123456');
+    expect(parsePairingPayload('nuvigia://parear?codigo=654321')).toBe('654321');
+    expect(parsePairingPayload('12345')).toBeNull();
+    expect(parsePairingPayload('https://exemplo.com')).toBeNull();
+  });
+});

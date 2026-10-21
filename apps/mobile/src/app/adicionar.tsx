@@ -8,6 +8,7 @@ import { Button, Card, Heading, Icon, IconButton, Input, Spinner, SwitchRow, Tex
 import { MOCK_DEVICES, MOCK_SSID, type DiscoveredDevice } from '@/data/mock';
 import { PROVIDERS } from '@/data/providers';
 import { useInteraction } from '@/hooks/useInteraction';
+import { hubClientRef } from '@/services/sync';
 import { useAppStore } from '@/state/store';
 import { accent, colors, focusRing, maxWidth, neutral, radius, sage, space } from '@/theme/theme';
 
@@ -24,6 +25,10 @@ export default function AddCameraScreen() {
   const { width } = useWindowDimensions();
   const cloud = useAppStore((s) => s.cloud);
   const addCamera = useAppStore((s) => s.addCamera);
+  const live = useAppStore((s) => s.mode === 'live');
+  const [devices, setDevices] = useState<DiscoveredDevice[]>(live ? [] : MOCK_DEVICES);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [newCamId, setNewCamId] = useState<string | null>(null);
 
   const [step, setStep] = useState<Step>('scan');
   const [found, setFound] = useState(0);
@@ -42,11 +47,27 @@ export default function AddCameraScreen() {
   const later = (fn: () => void, ms: number) => timers.current.push(setTimeout(fn, ms));
 
   useEffect(() => {
+    const list = timers.current;
+    const hub = hubClientRef.current;
+    if (live && hub) {
+      // descoberta real: o hub procura por ONVIF/WS-Discovery e manda cada câmera encontrada
+      const off = hub.onEvent((e) => {
+        if (e.type === 'cameraDiscovered') {
+          setDevices((d) => (d.some((x) => x.ip === e.ip) ? d : [...d, { model: e.model, ip: e.ip }]));
+        } else if (e.type === 'addCameraProgress') {
+          setConn(e.step);
+        }
+      });
+      hub.send({ type: 'discoverCameras' }, 30_000).catch(() => undefined);
+      return () => {
+        off();
+        list.forEach(clearTimeout);
+      };
+    }
     later(() => setFound(1), 1200);
     later(() => setFound(3), 2200);
-    const list = timers.current;
     return () => list.forEach(clearTimeout);
-  }, []);
+  }, [live]);
 
   const manual = picked === MANUAL;
   const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
@@ -54,22 +75,52 @@ export default function AddCameraScreen() {
   const provName = cloud ? PROVIDERS[cloud].name : 'nuvem';
 
   const connect = () => {
-    const badPass = pass.length < MIN_PASS;
+    // No modo real a câmera já está no Wi‑Fi (foi encontrada na rede): pedimos só o login dela.
+    const badPass = !live && pass.length < MIN_PASS;
     const badAddr = manual && address.trim().length === 0;
     setPassErr(badPass);
     setAddressErr(badAddr);
     if (badPass || badAddr) return;
     setStep('conn');
     setConn(0);
+    setAddError(null);
+    const hub = hubClientRef.current;
+    if (live && hub) {
+      setConn(1);
+      const ip = manual ? address.trim() : (picked?.ip ?? '');
+      hub
+        .send<{ cameraId: string }>(
+          {
+            type: 'addCamera',
+            name: name.trim() || 'Nova câmera',
+            room: room.trim(),
+            ip: ip.startsWith('rtsp://') ? '' : ip,
+            rtspUrl: ip.startsWith('rtsp://') ? ip : undefined,
+            username: camUser || undefined,
+            password: camPass || undefined,
+            uploadToCloud: toCloud,
+          },
+          60_000,
+        )
+        .then((r) => {
+          setNewCamId(r.cameraId);
+          setConn(3);
+        })
+        .catch((e: Error) => setAddError(e.message === 'auth_failed' ? 'Usuário ou senha da câmera incorretos.' : 'Não foi possível conectar a câmera.'));
+      return;
+    }
     [900, 1900, 2900].forEach((ms, i) => later(() => setConn(i + 1), ms));
   };
 
   const finish = () => {
+    if (live && newCamId) return router.replace(`/camera/${newCamId}`);
     const id = addCamera({ name, room, model: manual ? 'Câmera ONVIF' : (picked?.model ?? 'Câmera'), ip: manual ? address.trim() : (picked?.ip ?? ''), uploadToCloud: toCloud });
     router.replace(`/camera/${id}`);
   };
 
-  const steps = ['Câmera encontrada', `Conectando ao Wi‑Fi ${MOCK_SSID}`, toCloud ? `Vinculando ao ${provName}` : 'Preparando transmissão'];
+  const visibleDevices = live ? devices : devices.slice(0, found);
+  const shown = visibleDevices.length;
+  const steps = ['Câmera encontrada', live ? 'Conectando à câmera' : `Conectando ao Wi‑Fi ${MOCK_SSID}`, toCloud ? `Vinculando ao ${provName}` : 'Preparando transmissão'];
   const done = conn >= 3;
 
   return (
@@ -92,15 +143,21 @@ export default function AddCameraScreen() {
               Procurando câmeras na sua rede
             </Heading>
             <Text size={14} color={neutral[800]} style={styles.lead}>
-              Ligue a câmera e deixe o celular conectado ao Wi‑Fi <Text size={14} weight="bold" color={neutral[800]}>{MOCK_SSID}</Text>.
+              {live ? (
+                'Ligue a câmera e espere ela entrar no Wi‑Fi da casa. O hub procura câmeras ONVIF na rede.'
+              ) : (
+                <>
+                  Ligue a câmera e deixe o celular conectado ao Wi‑Fi <Text size={14} weight="bold" color={neutral[800]}>{MOCK_SSID}</Text>.
+                </>
+              )}
             </Text>
             <View style={styles.scanPill} accessibilityLiveRegion="polite">
               <Spinner />
               <Text size={14} color={accent[800]}>
-                {found ? `${found} ${found > 1 ? 'câmeras encontradas' : 'câmera encontrada'}, buscando mais…` : 'Buscando no Wi‑Fi…'}
+                {shown ? `${shown} ${shown > 1 ? 'câmeras encontradas' : 'câmera encontrada'}, buscando mais…` : 'Buscando no Wi‑Fi…'}
               </Text>
             </View>
-            {MOCK_DEVICES.slice(0, found).map((d) => (
+            {visibleDevices.map((d) => (
               <DeviceRow
                 key={d.ip}
                 device={d}
@@ -126,8 +183,9 @@ export default function AddCameraScreen() {
             <Heading size={30} lineHeight={33}>
               Configurar {picked?.model ?? 'câmera'}
             </Heading>
-            {manual ? (
+            {manual || live ? (
               <>
+                {manual ? (
                 <Input
                   label="Endereço IP ou URL RTSP"
                   value={address}
@@ -141,12 +199,14 @@ export default function AddCameraScreen() {
                   keyboardType="url"
                   error={addressErr ? 'Informe o IP ou a URL RTSP da câmera.' : undefined}
                 />
+                ) : null}
                 <Input label="Usuário da câmera" value={camUser} onChangeText={setCamUser} placeholder="admin" autoCapitalize="none" autoCorrect={false} />
                 <Input label="Senha da câmera" value={camPass} onChangeText={setCamPass} placeholder="Senha RTSP/ONVIF" secureTextEntry />
               </>
             ) : null}
             <Input label="Nome da câmera" value={name} onChangeText={setName} testID="input-name" />
             <Input label="Cômodo" value={room} onChangeText={setRoom} />
+            {live ? null : (
             <Input
               testID="input-wifi-pass"
               label={`Senha do Wi‑Fi ${MOCK_SSID}`}
@@ -161,6 +221,7 @@ export default function AddCameraScreen() {
               returnKeyType="done"
               onSubmitEditing={connect}
             />
+            )}
             <Card padding={0} style={styles.switchCard}>
               <SwitchRow label="Gravar na nuvem" hint="Clipes de movimento enviados automaticamente" value={toCloud} onValueChange={setToCloud} />
             </Card>
@@ -189,6 +250,12 @@ export default function AddCameraScreen() {
                 );
               })}
             </View>
+            {addError ? (
+              <Text size={13} color={accent[700]} accessibilityRole="alert">
+                {addError}
+              </Text>
+            ) : null}
+            {addError ? <Button label="Tentar de novo" variant="secondary" onPress={connect} /> : null}
             <View style={styles.spacer} />
             {done ? <Button testID="see-live" label="Ver ao vivo" size="lg" block onPress={finish} /> : null}
           </>

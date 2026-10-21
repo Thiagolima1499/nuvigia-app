@@ -4,7 +4,9 @@ import { Button, Heading, ListCard, Radio, RadioGroup, Screen, Segmented, Switch
 import { PROVIDER_ORDER, PROVIDERS } from '@/data/providers';
 import { SectionLabel } from '@/features/common/SectionLabel';
 import { useInteraction } from '@/hooks/useInteraction';
-import { useAppStore, type Switches } from '@/state/store';
+import { getSupabase } from '@/lib/supabase';
+import { useSession } from '@/state/session';
+import { useAppStore, useCloudInfo, type Switches } from '@/state/store';
 import { fonts, focusRing, maxWidth, neutral, sage, space } from '@/theme/theme';
 
 const QUALITIES = ['720p', '1080p', '2K'] as const;
@@ -29,6 +31,9 @@ export default function SettingsScreen() {
   const toggleSwitch = useAppStore((s) => s.toggleSwitch);
   const openCloudDialog = useAppStore((s) => s.openCloudDialog);
   const disconnect = useAppStore((s) => s.disconnectCloud);
+  const info = useCloudInfo();
+  const live = useAppStore((s) => s.mode === 'live');
+  const email = useSession((s) => s.session?.user.email);
 
   return (
     <Screen maxWidth={maxWidth.settings} bottomInset={110} testID="screen-settings" contentStyle={styles.content}>
@@ -50,7 +55,7 @@ export default function SettingsScreen() {
                 badgeBg={p.badgeBg}
                 badgeFg={p.badgeFg}
                 name={p.name}
-                sub={active ? p.account : 'Não conectado'}
+                sub={active ? (info?.account ?? p.account) : 'Não conectado'}
                 active={active}
                 onPress={active ? undefined : () => openCloudDialog(id)}
               />
@@ -81,6 +86,14 @@ export default function SettingsScreen() {
           <SwitchRow key={s.key} label={s.label} hint={s.hint} value={switches[s.key]} onValueChange={() => toggleSwitch(s.key)} />
         ))}
       </ListCard>
+
+      {live ? (
+        <View style={styles.group}>
+          <SectionLabel>Conta</SectionLabel>
+          <Text size={14}>{email ?? ''}</Text>
+          <Button label="Sair" variant="secondary" onPress={() => getSupabase()?.auth.signOut()} />
+        </View>
+      ) : null}
     </Screen>
   );
 }

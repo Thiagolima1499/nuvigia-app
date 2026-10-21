@@ -3,14 +3,13 @@ import { Plus, ServerOff, Video } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 
 import { Heading, IconButton, Screen, Text, useToast } from '@/components/ui';
-import { formatBytes, formatClock, greeting } from '@/data/format';
-import { PROVIDERS } from '@/data/providers';
+import { formatClock, greeting, quotaLabel } from '@/data/format';
 import { CameraCard } from '@/features/cameras/CameraCard';
 import { CloudStrip, NoCloudCard } from '@/features/cloud/CloudStrip';
 import { StateCard } from '@/features/common/StateCard';
 import { useAutoFillGrid } from '@/hooks/useGrid';
 import { useNow } from '@/hooks/useNow';
-import { selectRecordingCount, useAppStore } from '@/state/store';
+import { selectRecordingCount, useAppStore, useCloudInfo } from '@/state/store';
 import { accent, maxWidth, neutral, radius, space } from '@/theme/theme';
 
 const GAP = space[3];
@@ -22,7 +21,6 @@ export default function CamerasScreen() {
   const cameras = useAppStore((s) => s.cameras);
   const hubStatus = useAppStore((s) => s.hubStatus);
   const retryHub = useAppStore((s) => s.retryHub);
-  const cloud = useAppStore((s) => s.cloud);
   const layout = useAppStore((s) => s.homeLayout);
   const recordMode = useAppStore((s) => s.recordMode);
   const recCount = useAppStore(selectRecordingCount);
@@ -31,7 +29,7 @@ export default function CamerasScreen() {
   const { itemWidth } = useAutoFillGrid(maxWidth.cameras, grid ? 170 : 320, GAP);
   const clock = formatClock(now);
   const modeLabel = recordMode === 'motion' ? 'Por movimento' : 'Contínua';
-  const prov = cloud ? PROVIDERS[cloud] : null;
+  const prov = useCloudInfo();
 
   return (
     <Screen maxWidth={maxWidth.cameras} bottomInset={110} testID="screen-cameras">
@@ -64,7 +62,7 @@ export default function CamerasScreen() {
         {prov ? (
           <CloudStrip
             title={`Salvando no ${prov.name}`}
-            subtitle={`${recCount} gravando agora · ${formatBytes(prov.usedBytes)} de ${formatBytes(prov.totalBytes)}`}
+            subtitle={`${recCount} gravando agora · ${quotaLabel(prov.usedBytes, prov.totalBytes)}`}
             onPress={() => router.navigate('/gravacoes')}
           />
         ) : (

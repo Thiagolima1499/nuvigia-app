@@ -1,0 +1,45 @@
+# Configuração do Supabase CLI (supabase start / supabase db push / supabase functions deploy).
+project_id = "nuvigia"
+
+[api]
+schemas = ["public"]
+max_rows = 1000
+
+[db]
+major_version = 17
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "nuvigia://"
+additional_redirect_urls = ["nuvigia://auth", "exp://**", "http://localhost:8081/**"]
+# Login por código enviado por e-mail (o app pede os 6 dígitos).
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+otp_length = 6
+otp_expiry = 600
+
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_GOOGLE_SECRET)"
+skip_nonce_check = true
+
+[functions.hub-register]
+# O hub ainda não tem sessão quando se registra; a função valida HUB_REGISTRATION_SECRET.
+verify_jwt = false
+
+[functions.turn-credentials]
+verify_jwt = true
+
+[functions.notify-motion]
+verify_jwt = true

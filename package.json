@@ -6,7 +6,10 @@
     "lint": "pnpm -r --if-present lint",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
-    "mobile": "pnpm --filter @nuvigia/mobile start"
+    "mobile": "pnpm --filter @nuvigia/mobile start",
+    "test:db": "bash supabase/tests/run-db-tests.sh"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }
