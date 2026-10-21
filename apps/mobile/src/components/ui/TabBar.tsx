@@ -30,14 +30,14 @@ export function TabBar({ active, onChange, floating = true }: TabBarProps) {
     <View pointerEvents="box-none" style={floating ? [styles.layer, { bottom: insets.bottom + 16 }] : styles.inline}>
       <View accessibilityRole="tablist" style={styles.bar}>
         {TABS.map((t) => (
-          <TabItem key={t.key} label={t.label} icon={t.icon} selected={t.key === active} onPress={() => onChange(t.key)} />
+          <TabItem key={t.key} testID={`tab-${t.key}`} label={t.label} icon={t.icon} selected={t.key === active} onPress={() => onChange(t.key)} />
         ))}
       </View>
     </View>
   );
 }
 
-function TabItem({ label, icon, selected, onPress }: { label: string; icon: LucideIcon; selected: boolean; onPress: () => void }) {
+function TabItem({ label, icon, selected, onPress, testID }: { label: string; icon: LucideIcon; selected: boolean; onPress: () => void; testID?: string }) {
   const { focused, handlers } = useInteraction();
   const fg = selected ? colors.bg : neutral[300];
   return (
@@ -45,6 +45,7 @@ function TabItem({ label, icon, selected, onPress }: { label: string; icon: Luci
       accessibilityRole="tab"
       accessibilityState={{ selected }}
       accessibilityLabel={label}
+      testID={testID}
       onPress={onPress}
       {...handlers}
       style={[
