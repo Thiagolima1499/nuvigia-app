@@ -1,4 +1,5 @@
 import { Camera, ChevronLeft, ChevronRight, CloudUpload, Plus, X } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -28,6 +29,7 @@ import {
   useToast,
   type TabKey,
 } from '@/components/ui';
+import { useAppStore } from '@/state/store';
 import { accent, colors, maxWidth, neutral, radius, sage, shadow, space } from '@/theme/theme';
 
 const QUALITIES = ['720p', '1080p', '2K'] as const;
@@ -38,7 +40,7 @@ const PROVIDERS = [
 ] as const;
 type ProviderKey = (typeof PROVIDERS)[number]['key'];
 
-/** Catálogo de componentes base (etapa 1), para revisão visual. */
+/** Catálogo de componentes base e simulador de estados (abre com toque longo no "Nuvigia" da tela Câmeras). */
 export default function Catalogo() {
   const toast = useToast();
   const [quality, setQuality] = useState<(typeof QUALITIES)[number]>('1080p');
@@ -72,6 +74,8 @@ export default function Catalogo() {
           Componentes base do design system Organic. Toque em tudo para ver os estados.
         </Text>
       </View>
+
+      <SimulateStates />
 
       <Section title="Cores">
         <Swatches label="Neutro" ramp={neutral} />
@@ -285,6 +289,48 @@ export default function Catalogo() {
         </DialogBody>
       </BottomSheet>
     </Screen>
+  );
+}
+
+/** Atalhos para revisar estados de carregamento, vazio e erro nas telas reais. */
+function SimulateStates() {
+  const router = useRouter();
+  const toast = useToast();
+  const simulate = useAppStore((s) => s.simulate);
+  const reset = useAppStore((s) => s.reset);
+  const disconnect = useAppStore((s) => s.disconnectCloud);
+  const layout = useAppStore((s) => s.homeLayout);
+  const setLayout = useAppStore((s) => s.setHomeLayout);
+  const recordings = useAppStore((s) => s.recordings);
+  const apply = (msg: string, fn: () => void) => {
+    fn();
+    toast.show(msg);
+  };
+  return (
+    <Section title="Simular estados">
+      <Text size={12} color={neutral[700]}>
+        Muda os dados simulados para conferir cada estado nas telas.
+      </Text>
+      <View style={styles.wrap}>
+        <Button label="Abrir o app" onPress={() => router.replace('/')} />
+        <Button label={layout === 'list' ? 'Câmeras em grade' : 'Câmeras em lista'} variant="secondary" onPress={() => setLayout(layout === 'list' ? 'grid' : 'list')} />
+        <Button label="Sem câmeras" variant="secondary" onPress={() => apply('Lista de câmeras vazia', () => simulate({ cameras: [] }))} />
+        <Button label="Hub inacessível" variant="secondary" onPress={() => apply('Hub marcado como inacessível', () => simulate({ hubStatus: 'unreachable' }))} />
+        <Button label="Carregando" variant="secondary" onPress={() => apply('Câmeras carregando', () => simulate({ hubStatus: 'loading' }))} />
+        <Button label="Sem nuvem" variant="secondary" onPress={() => apply('Nuvem desconectada', disconnect)} />
+        <Button
+          label="Falha de envio"
+          variant="secondary"
+          onPress={() =>
+            apply('Primeira gravação com falha', () =>
+              simulate({ recordings: recordings.map((r, i) => (i === 0 ? { ...r, status: 'failed' as const } : r)) }),
+            )
+          }
+        />
+        <Button label="Sem gravações" variant="secondary" onPress={() => apply('Lista de gravações vazia', () => simulate({ recordings: [] }))} />
+        <Button label="Restaurar dados" variant="ghost" onPress={() => apply('Dados simulados restaurados', reset)} />
+      </View>
+    </Section>
   );
 }
 

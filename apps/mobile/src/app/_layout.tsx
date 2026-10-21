@@ -9,9 +9,21 @@ import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@/components/ui';
+import { CloudDialog } from '@/features/cloud/CloudDialog';
+import { useAppStore } from '@/state/store';
 import { colors } from '@/theme/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
+
+/** Simula o avanço dos envios (no app real vem do hub pelo Realtime, etapa 5). */
+function UploadTicker() {
+  const tick = useAppStore((s) => s.tickUploads);
+  useEffect(() => {
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, [tick]);
+  return null;
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({ Caprasimo_400Regular, Figtree_400Regular, Figtree_600SemiBold, Figtree_700Bold });
@@ -28,7 +40,14 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
           <StatusBar style="dark" />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />
+          <UploadTicker />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="camera/[id]" />
+            <Stack.Screen name="adicionar" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="catalogo" />
+          </Stack>
+          <CloudDialog />
         </ToastProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
