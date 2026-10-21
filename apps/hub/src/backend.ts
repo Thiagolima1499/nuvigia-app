@@ -29,7 +29,9 @@ export interface Backend {
   deleteRecording(id: string): Promise<void>;
   /** Gravações já na nuvem com início antes de `before` (retenção). */
   listCloudRecordingsBefore(before: string, limit: number): Promise<Pick<RecordingRow, 'id' | 'cloud_file_ref' | 'provider' | 'started_at'>[]>;
-  insertEvent(e: NewEvent): Promise<void>;
+  insertEvent(e: NewEvent): Promise<string>;
+  /** Pede ao Supabase a notificação de movimento (função notify-motion). */
+  notifyMotion(eventId: string): Promise<void>;
   getSettings(): Promise<SettingsRow | null>;
   updateCloud(patch: CloudPatch): Promise<void>;
   uploadThumbnail(name: string, jpeg: Buffer): Promise<string>;
@@ -121,7 +123,12 @@ export class SupabaseBackend implements Backend {
   }
 
   async insertEvent(e: NewEvent) {
-    check(await this.sb.from('events').insert({ ...e, hub_id: this.hubId }), 'registrar evento');
+    return must(await this.sb.from('events').insert({ ...e, hub_id: this.hubId }).select('id').single<{ id: string }>(), 'registrar evento').id;
+  }
+
+  async notifyMotion(eventId: string) {
+    const { error } = await this.sb.functions.invoke('notify-motion', { body: { eventId } });
+    if (error) throw new Error(`notificar movimento: ${error.message}`);
   }
 
   async getSettings() {

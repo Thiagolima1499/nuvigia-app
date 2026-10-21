@@ -6,10 +6,13 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@/components/ui';
 import { CloudDialog } from '@/features/cloud/CloudDialog';
+import { isDemo } from '@/lib/config';
+import { PushGate } from '@/services/PushGate';
 import { SessionGate } from '@/services/SessionGate';
 import { useAppStore } from '@/state/store';
 import { colors } from '@/theme/theme';
@@ -43,6 +46,7 @@ export default function RootLayout() {
           <StatusBar style="dark" />
           <UploadTicker />
           <SessionGate />
+          {isDemo || Platform.OS === 'web' ? null : <PushGate />}
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="camera/[id]" />

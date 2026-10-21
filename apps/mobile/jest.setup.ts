@@ -12,3 +12,12 @@ jest.mock('expo-video', () => ({
   useVideoPlayer: () => ({ play: jest.fn(), pause: jest.fn(), muted: false }),
   VideoView: () => null,
 }));
+jest.mock('expo-notifications', () => ({
+  setNotificationHandler: jest.fn(),
+  useLastNotificationResponse: () => null,
+  getPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  requestPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  getExpoPushTokenAsync: jest.fn(async () => ({ data: 'ExponentPushToken[teste]' })),
+  setNotificationChannelAsync: jest.fn(),
+  AndroidImportance: { HIGH: 4 },
+}));

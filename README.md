@@ -44,6 +44,6 @@ pnpm test
 3. Supabase: esquema, RLS, login e canais Realtime.
 4. **Hub:** pareamento, ONVIF, go2rtc, gravação e detecção de movimento ([apps/hub](apps/hub/README.md)).
 5. **Nuvem:** Google Drive, OneDrive e iCloud ([como configurar](docs/configurar-nuvem.md)).
-6. **Ao vivo remoto:** WebRTC pelo Supabase Realtime, TURN (coturn) e plano B por HLS ([detalhes](apps/hub/README.md#ao-vivo-fora-de-casa)). ← atual
-7. Notificações de movimento.
+6. **Ao vivo remoto:** WebRTC pelo Supabase Realtime, TURN (coturn) e plano B por HLS ([detalhes](apps/hub/README.md#ao-vivo-fora-de-casa)).
+7. **Notificações de movimento** com foto, 1 por minuto por câmera ([detalhes](supabase/README.md#notificações-de-movimento)). ← atual
 8. Qualidade: testes, e2e com Maestro e builds EAS.

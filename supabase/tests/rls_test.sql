@@ -148,6 +148,29 @@ begin
   end;
 end $$;
 
+-- ------------------------------------------------------------- tokens de push
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select public.register_push_token('ExponentPushToken[aparelho-1]', 'ios');
+select pg_temp.check((select count(*) from public.push_tokens) = 1, 'Ana registra o token do aparelho');
+do $$ begin
+  perform public.register_push_token('qualquer-coisa', 'ios');
+  raise exception 'aceitou token inválido';
+exception when invalid_parameter_value then raise notice 'ok - token inválido recusado';
+end $$;
+select pg_temp.act('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.push_tokens) = 0, 'Beto não vê o token da Ana');
+-- o mesmo aparelho passa a ser do Beto quando ele entra nele
+select public.register_push_token('ExponentPushToken[aparelho-1]', 'android');
+select pg_temp.check((select count(*) from public.push_tokens) = 1, 'token passa para a conta que entrou no aparelho');
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select count(*) from public.push_tokens) = 0, 'Ana deixa de receber no aparelho do Beto');
+select pg_temp.act('00000000-0000-0000-0000-0000000000a1');
+do $$ begin
+  perform public.register_push_token('ExponentPushToken[hub]', 'ios');
+  raise exception 'hub registrou token';
+exception when insufficient_privilege then raise notice 'ok - hub não registra token de push';
+end $$;
+
 -- ---------------------------------------------------------- desparear (apagar)
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 delete from public.hubs where id = '10000000-0000-0000-0000-00000000000a';

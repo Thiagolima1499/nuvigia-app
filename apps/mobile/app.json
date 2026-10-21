@@ -44,7 +44,13 @@
           "microphonePermission": "O Nuvigia usa o microfone quando você toca em Falar para conversar pela câmera."
         }
       ],
-      "expo-video"
+      "expo-video",
+      [
+        "expo-notifications",
+        {
+          "color": "#c67139"
+        }
+      ]
     ],
     "scheme": "nuvigia",
     "backgroundColor": "#f5ead8",

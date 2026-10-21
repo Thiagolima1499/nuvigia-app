@@ -373,7 +373,13 @@ export class CameraManager {
     } catch {
       thumbnail = null;
     }
-    await this.d.backend.insertEvent({ camera_id: id, type: 'motion', recording_id: recordingId, thumbnail_path: thumbnail }).catch((err) => this.d.log.warn({ err }, 'falha ao registrar movimento'));
+    try {
+      const eventId = await this.d.backend.insertEvent({ camera_id: id, type: 'motion', recording_id: recordingId, thumbnail_path: thumbnail });
+      // a função decide se avisa (ajuste ligado, intervalo de 1 min por câmera, aparelhos cadastrados)
+      await this.d.backend.notifyMotion(eventId).catch((err) => this.d.log.warn({ err: (err as Error).message }, 'falha ao pedir notificação'));
+    } catch (err) {
+      this.d.log.warn({ err }, 'falha ao registrar movimento');
+    }
   }
 
   /** Verifica se cada câmera responde e avisa o app quando muda. */
