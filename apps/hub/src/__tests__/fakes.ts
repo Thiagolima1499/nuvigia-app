@@ -101,8 +101,13 @@ export class FakeBackend implements Backend {
     return [...this.recordings.values()].filter((r) => r.cloud_file_ref && r.started_at < before);
   }
   cloudPatches: CloudPatch[] = [];
+  notified: string[] = [];
   async insertEvent(e: NewEvent) {
     this.events.push(e);
+    return `evt-${this.events.length}`;
+  }
+  async notifyMotion(eventId: string) {
+    this.notified.push(eventId);
   }
   async getSettings() {
     return this.settings;

@@ -281,6 +281,20 @@ describe('câmeras', () => {
     await f.mgr.stop();
   });
 
+  it('movimento: grava clipe, registra evento com foto e pede a notificação', async () => {
+    const f = camerasFixture({});
+    f.backend.cameras.push({ id: 'cam-1', hub_id: f.backend.hubId, owner_id: 'ana', name: 'Sala', room: 'Sala', model: 'M', ip: '10.0.0.2', online: true, recording: false, rec_started_at: null, record_mode: 'motion', upload_to_cloud: true, supports_talk: false, created_at: '' });
+    f.store.setCameraSecret('cam-1', { rtspUrl: 'rtsp://10.0.0.2/s' });
+    await f.mgr.start(null);
+    await (f.mgr as unknown as { onMotion: (id: string) => Promise<void> }).onMotion('cam-1');
+    const clip = [...f.backend.recordings.values()][0]!;
+    expect(f.procs.some((p) => p.args.includes('30'))).toBe(true);
+    expect(f.backend.events[0]).toMatchObject({ camera_id: 'cam-1', type: 'motion', recording_id: clip.id });
+    expect(f.backend.events[0]!.thumbnail_path).toMatch(/evt-.*\.jpg$/);
+    expect(f.backend.notified).toEqual(['evt-1']);
+    await f.mgr.stop();
+  });
+
   it('modo contínuo grava em segmentos; voltar para movimento para a gravação', async () => {
     const f = camerasFixture({});
     f.backend.cameras.push({ id: 'cam-1', hub_id: f.backend.hubId, owner_id: 'ana', name: 'Sala', room: 'Sala', model: 'M', ip: '10.0.0.2', online: true, recording: false, rec_started_at: null, record_mode: 'motion', upload_to_cloud: false, supports_talk: false, created_at: '' });

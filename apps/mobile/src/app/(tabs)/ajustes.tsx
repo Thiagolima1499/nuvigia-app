@@ -5,6 +5,7 @@ import { PROVIDER_ORDER, PROVIDERS } from '@/data/providers';
 import { SectionLabel } from '@/features/common/SectionLabel';
 import { useInteraction } from '@/hooks/useInteraction';
 import { getSupabase } from '@/lib/supabase';
+import { unregisterPush } from '@/services/push';
 import { useSession } from '@/state/session';
 import { useAppStore, useCloudInfo, type Switches } from '@/state/store';
 import { fonts, focusRing, maxWidth, neutral, sage, space } from '@/theme/theme';
@@ -20,6 +21,14 @@ const SWITCHES: { key: keyof Switches; label: string; hint: string }[] = [
   { key: 'notifyMotion', label: 'Avisar quando houver movimento', hint: 'Notificação com foto da câmera' },
   { key: 'deleteAfter30', label: 'Apagar da nuvem após 30 dias', hint: 'Libera espaço automaticamente' },
 ];
+
+/** Sai da conta; antes, o aparelho deixa de receber os avisos dela. */
+async function signOut() {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  await unregisterPush(supabase).catch(() => undefined);
+  await supabase.auth.signOut();
+}
 
 export default function SettingsScreen() {
   const cloud = useAppStore((s) => s.cloud);
@@ -91,7 +100,7 @@ export default function SettingsScreen() {
         <View style={styles.group}>
           <SectionLabel>Conta</SectionLabel>
           <Text size={14}>{email ?? ''}</Text>
-          <Button label="Sair" variant="secondary" onPress={() => getSupabase()?.auth.signOut()} />
+          <Button label="Sair" variant="secondary" onPress={() => void signOut()} />
         </View>
       ) : null}
     </Screen>
