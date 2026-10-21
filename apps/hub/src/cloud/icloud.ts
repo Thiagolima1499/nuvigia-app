@@ -113,6 +113,11 @@ export class ICloud implements CloudProvider {
     return deleteFilesBefore(this, cutoff, files);
   }
 
+  /** O CloudKit não tem página web do arquivo; o app toca pelo hub. */
+  async webLink() {
+    return null;
+  }
+
   /** O CloudKit não expõe a cota do iCloud: o uploader soma o que o Nuvigia enviou. */
   async getQuota() {
     return { usedBytes: null, totalBytes: null };

@@ -134,6 +134,10 @@ export class GoogleDrive implements CloudProvider {
     return deleteFilesBefore(this, cutoff, files);
   }
 
+  async webLink(ref: string) {
+    return `https://drive.google.com/file/d/${encodeURIComponent(ref)}/view`;
+  }
+
   async getQuota() {
     const about = await this.json<{ storageQuota?: { usage?: string; limit?: string } }>(`${API}/about?fields=storageQuota`);
     const used = Number(about.storageQuota?.usage);

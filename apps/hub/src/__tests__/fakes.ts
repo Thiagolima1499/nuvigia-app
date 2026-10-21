@@ -31,8 +31,12 @@ export class FakeBackend implements Backend {
   codeTtlMs = 600_000;
   now = () => Date.now();
 
+  publicUrl: string | null = null;
   async getOwnerId() {
     return this.owner;
+  }
+  async setPublicUrl(url: string | null) {
+    this.publicUrl = url;
   }
   async createPairingCode() {
     this.codes++;
@@ -130,6 +134,10 @@ export class FakeCloud implements CloudControl {
   }
   async retry(id: string) {
     this.retried.push(id);
+  }
+  link: string | null = null;
+  async webLink() {
+    return this.link;
   }
   notifyFileReady(id: string) {
     this.ready.push(id);

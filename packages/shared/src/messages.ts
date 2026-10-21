@@ -37,6 +37,10 @@ export const HubCommand = z.discriminatedUnion('type', [
     ckWebAuthToken: z.string().optional(),
   }),
   z.object({ type: z.literal('disconnectCloud') }),
+  /** Plano B do ao vivo: endereço HLS temporário (só com túnel configurado no hub). */
+  z.object({ type: z.literal('liveHls'), cameraId: z.string() }),
+  /** Para assistir uma gravação: arquivo no hub (pelo túnel) ou link do provedor. */
+  z.object({ type: z.literal('recordingLink'), recordingId: z.string() }),
 ]);
 export type HubCommand = z.infer<typeof HubCommand>;
 

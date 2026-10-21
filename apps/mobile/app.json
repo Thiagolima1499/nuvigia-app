@@ -36,7 +36,15 @@
           "microphonePermission": false,
           "recordAudioAndroid": false
         }
-      ]
+      ],
+      [
+        "@config-plugins/react-native-webrtc",
+        {
+          "cameraPermission": "O Nuvigia usa a câmera para ler o QR do hub.",
+          "microphonePermission": "O Nuvigia usa o microfone quando você toca em Falar para conversar pela câmera."
+        }
+      ],
+      "expo-video"
     ],
     "scheme": "nuvigia",
     "backgroundColor": "#f5ead8",

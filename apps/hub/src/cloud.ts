@@ -13,6 +13,8 @@ export interface CloudControl {
   disconnect(): Promise<void>;
   /** Coloca um arquivo de volta na fila de envio. */
   retry(recordingId: string): Promise<void>;
+  /** Link do arquivo no site do provedor (para assistir uma gravação), se houver. */
+  webLink(recordingId: string): Promise<string | null>;
   /** Um arquivo novo ficou pronto. */
   notifyFileReady(recordingId: string): void;
   start(): void;
@@ -29,6 +31,9 @@ export class NoCloud implements CloudControl {
   async disconnect() {}
   async retry() {
     throw new Error('cloud_unavailable');
+  }
+  async webLink() {
+    return null;
   }
   notifyFileReady() {}
   start() {}

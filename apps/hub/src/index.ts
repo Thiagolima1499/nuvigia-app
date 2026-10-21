@@ -16,8 +16,10 @@ import { Uploader } from './cloud/uploader';
 import { handleCommand } from './commands';
 import { loadConfig } from './config';
 import { parseKey, Secrets } from './crypto';
-import { Go2rtc } from './go2rtc';
+import { Go2rtc, streamName } from './go2rtc';
 import { startHttp } from './http';
+import { LinkSigner } from './links';
+import { LiveService } from './live';
 import { connectSupabase } from './identity';
 import { cleanLocalFiles, forgetRecording } from './janitor';
 import { announce } from './mdns';
@@ -35,14 +37,21 @@ const EXIT_RESTART = 75;
 async function main() {
   const cfg = loadConfig();
   const log = pino({ level: cfg.LOG_LEVEL, base: { app: 'nuvigia-hub', v: cfg.version } });
-  const secrets = new Secrets(parseKey(cfg.HUB_SECRET_KEY));
+  const secretKey = parseKey(cfg.HUB_SECRET_KEY);
+  const secrets = new Secrets(secretKey);
+  const signer = new LinkSigner(secretKey);
   const store = new LocalStore(join(cfg.DATA_DIR, 'hub.db'), secrets);
 
   const { supabase, identity } = await connectSupabase(cfg, store, log);
   const backend = new SupabaseBackend(supabase, identity.hubId);
 
   const pairing = new Pairing(backend, log);
-  const http = startHttp(pairing, cfg.HTTP_HOST, cfg.HTTP_PORT);
+  const http = startHttp(pairing, cfg.HTTP_HOST, cfg.HTTP_PORT, {
+    signer,
+    go2rtcUrl: cfg.GO2RTC_URL,
+    streamName,
+    filePath: (id) => store.getFile(id)?.path ?? null,
+  });
   log.info(`página do hub em http://<ip-deste-computador>:${cfg.HTTP_PORT}`);
   const unannounce = cfg.MDNS ? announce({ name: cfg.HUB_NAME, port: cfg.HTTP_PORT, hubId: identity.hubId, version: cfg.version }) : () => undefined;
 
@@ -95,7 +104,21 @@ async function main() {
     emit: (e) => void channel?.emit(e),
   });
   const cameras: CameraManager = new CameraManager({ cfg, backend, store, go2rtc, onvif, cloud, spawn: spawnProcess, log, emit: (e) => void channel?.emit(e) });
-  channel = new HubChannel(supabase, identity.hubId, (cmd, emit) => handleCommand(cmd, { version: cfg.version, backend, cameras, cloud, onvif, log }, emit), log);
+  channel = new HubChannel(
+    supabase,
+    identity.hubId,
+    (cmd, emit) => handleCommand(cmd, { version: cfg.version, backend, cameras, cloud, onvif, log, publicUrl: cfg.HUB_PUBLIC_URL, signer, store }, emit),
+    log,
+  );
+  const live = new LiveService({
+    go2rtc,
+    hasCamera: (id) => cameras.has(id),
+    isOnline: (id) => cameras.isOnline(id),
+    send: (msg) => channel!.signal(msg),
+    log,
+  });
+  channel.onSignal((p) => void live.onSignal(p));
+  await backend.setPublicUrl(cfg.HUB_PUBLIC_URL ?? null).catch((err) => log.warn({ err: err.message }, 'não foi possível salvar o endereço público'));
 
   await cameras.start(settings);
   cloud.start();
