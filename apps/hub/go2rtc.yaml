@@ -1,0 +1,17 @@
+# go2rtc: as câmeras são adicionadas pelo hub via API (com as credenciais do cofre do hub).
+api:
+  # só o hub fala com a API; nada fica exposto na rede
+  listen: "127.0.0.1:1984"
+  origin: "*"
+rtsp:
+  listen: "127.0.0.1:8554"
+webrtc:
+  # ao vivo remoto (etapa 6): ICE por STUN/TURN, sem abrir portas no roteador
+  listen: ":8555"
+  candidates:
+    - stun:8555
+  ice_servers:
+    - urls: [stun:stun.l.google.com:19302]
+log:
+  level: warn
+streams: {}

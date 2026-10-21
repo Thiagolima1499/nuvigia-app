@@ -1,0 +1,28 @@
+# Hub + go2rtc na mesma máquina da rede de casa (Raspberry Pi, mini PC, NAS com Linux).
+# Rede "host": precisa de multicast para achar câmeras (ONVIF) e anunciar o hub (mDNS).
+# Nenhuma porta é aberta no roteador; o hub só faz conexões de saída para o Supabase.
+services:
+  go2rtc:
+    image: alexxit/go2rtc:1.9.9
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      # somente leitura: o go2rtc não grava as URLs (com senha) das câmeras em disco
+      - ./go2rtc.yaml:/config/go2rtc.yaml:ro
+
+  hub:
+    build:
+      context: ../..
+      dockerfile: apps/hub/Dockerfile
+    network_mode: host
+    restart: unless-stopped
+    depends_on: [go2rtc]
+    env_file: .env
+    environment:
+      GO2RTC_URL: http://127.0.0.1:1984
+      GO2RTC_RTSP: rtsp://127.0.0.1:8554
+    volumes:
+      - nuvigia-data:/data
+
+volumes:
+  nuvigia-data:
