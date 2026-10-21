@@ -25,7 +25,7 @@ pnpm mobile          # abre o Expo; leia o QR code com o app Expo Go no celular
 
 No navegador: `pnpm --filter @nuvigia/mobile web`.
 
-O app abre no **catálogo de componentes** (etapa 1). A partir da etapa 2 ele passa a abrir na tela Câmeras.
+O app abre na tela **Câmeras**, com dados simulados. O **catálogo de componentes** e o simulador de estados (sem câmeras, hub inacessível, sem nuvem, falha de envio) abrem com um toque longo em “Nuvigia” no topo da tela Câmeras, ou pelo endereço `/catalogo` no navegador.
 
 ## Verificações
 
@@ -37,8 +37,8 @@ pnpm test
 
 ## Etapas
 
-1. **Base:** monorepo, lint, TypeScript estrito, tema com os tokens, fontes, componentes base e catálogo. ← atual
-2. Telas com dados simulados (Câmeras, Ao vivo, Gravações, Ajustes, Adicionar câmera, diálogo da nuvem).
+1. **Base:** monorepo, lint, TypeScript estrito, tema com os tokens, fontes, componentes base e catálogo.
+2. **Telas com dados simulados** (Câmeras, Ao vivo, Gravações, Ajustes, Adicionar câmera, diálogo da nuvem). ← atual
 3. Supabase: esquema, RLS, login e canais Realtime.
 4. Hub: pareamento, ONVIF, go2rtc, gravação.
 5. Nuvem: Google Drive, OneDrive e iCloud.
