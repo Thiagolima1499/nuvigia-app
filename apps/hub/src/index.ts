@@ -8,7 +8,6 @@ import { HubChannel } from './channel';
 import type { CloudProviderId } from '@nuvigia/shared';
 
 import { GoogleDrive } from './cloud/google';
-import { ICloud, type CloudKitToken } from './cloud/icloud';
 import type { OAuthToken } from './cloud/oauth';
 import { OneDrive } from './cloud/onedrive';
 import type { CloudProvider } from './cloud/provider';
@@ -91,8 +90,7 @@ async function main() {
   const tokenStore = <T,>(id: CloudProviderId) => ({ get: () => store.getCloudToken<T>(id), set: (t: T) => store.setCloudToken(id, t) });
   const makeProvider = (id: CloudProviderId): CloudProvider => {
     if (id === 'google') return new GoogleDrive(tokenStore<OAuthToken>('google'));
-    if (id === 'onedrive') return new OneDrive(tokenStore<OAuthToken>('onedrive'));
-    return new ICloud({ container: cfg.CLOUDKIT_CONTAINER, apiToken: cfg.CLOUDKIT_API_TOKEN, environment: cfg.CLOUDKIT_ENV }, tokenStore<CloudKitToken>('icloud'));
+    return new OneDrive(tokenStore<OAuthToken>('onedrive'));
   };
   const cloud: Uploader = new Uploader({
     backend,

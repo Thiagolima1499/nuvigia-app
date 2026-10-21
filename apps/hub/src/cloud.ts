@@ -4,7 +4,7 @@ export type ConnectCloud = Extract<HubCommand, { type: 'connectCloud' }>;
 
 /**
  * O que o resto do hub precisa da nuvem. A implementação de verdade
- * (Google Drive, OneDrive e iCloud) chega na etapa 5; aqui fica a versão "sem nuvem",
+ * (Google Drive e OneDrive) chega na etapa 5; aqui fica a versão "sem nuvem",
  * em que tudo é guardado só no disco do hub.
  */
 export interface CloudControl {

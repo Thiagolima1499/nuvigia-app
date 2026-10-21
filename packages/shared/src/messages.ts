@@ -25,16 +25,15 @@ export const HubCommand = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('removeCamera'), cameraId: z.string() }),
   z.object({ type: z.literal('retryUpload'), recordingId: z.string() }),
-  /** Entrega ao hub o resultado do login feito no app (código OAuth + PKCE ou token do CloudKit). */
+  /** Entrega ao hub o resultado do login feito no app (código OAuth + PKCE). */
   z.object({
     type: z.literal('connectCloud'),
-    provider: z.enum(['google', 'onedrive', 'icloud']),
+    provider: z.enum(['google', 'onedrive']),
     code: z.string().optional(),
     codeVerifier: z.string().optional(),
     redirectUri: z.string().optional(),
     /** ID do cliente OAuth usado no login (muda entre iOS e Android); o hub usa para renovar o token. */
     clientId: z.string().optional(),
-    ckWebAuthToken: z.string().optional(),
   }),
   z.object({ type: z.literal('disconnectCloud') }),
   /** Plano B do ao vivo: endereço HLS temporário (só com túnel configurado no hub). */

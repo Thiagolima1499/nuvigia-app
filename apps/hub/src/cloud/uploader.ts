@@ -99,7 +99,7 @@ export class Uploader implements CloudControl {
     const { account } = await provider.connect(cmd);
     const folderRef = await provider.ensureFolder(['Nuvigia']);
     // trocar de provedor não move gravações antigas; só apaga os tokens do anterior
-    for (const other of ['google', 'onedrive', 'icloud'] as const) if (other !== cmd.provider) this.d.store.deleteCloudToken(other);
+    for (const other of ['google', 'onedrive'] as const) if (other !== cmd.provider) this.d.store.deleteCloudToken(other);
     this.provider = provider;
     this.providerId = cmd.provider;
     this.paused = false;
@@ -226,7 +226,7 @@ export class Uploader implements CloudControl {
     log.error({ recordingId: f.recordingId, err: msg }, 'envio falhou de vez');
   }
 
-  /** Provedores sem cota (iCloud) somam o que o Nuvigia enviou. */
+  /** Se o provedor não informar a cota, soma o que o Nuvigia enviou. */
   private async addUsage(bytes: number) {
     if (!this.provider) return;
     const q = await this.provider.getQuota().catch(() => null);

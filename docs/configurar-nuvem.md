@@ -1,4 +1,4 @@
-# Configurar a nuvem (Google Drive, OneDrive e iCloud)
+# Configurar a nuvem (Google Drive e OneDrive)
 
 O login acontece no app, mas quem guarda o acesso é o hub. O app abre a tela de login do provedor (OAuth com PKCE) e manda o código de uso único para o hub pelo canal privado do Supabase.
 O hub troca esse código pelos tokens e guarda tudo cifrado no disco. O app nunca recebe os tokens, só o status (conta, uso e espaço).
@@ -9,7 +9,6 @@ Escopos mínimos:
 | --- | --- | --- |
 | Google Drive | `drive.file` | Só os arquivos que o próprio Nuvigia criou (pasta `Meu Drive/Nuvigia`) |
 | OneDrive | `Files.ReadWrite.AppFolder offline_access` | Só a pasta do app (`OneDrive/Aplicativos/Nuvigia`) |
-| iCloud | CloudKit, banco privado de `iCloud.br.com.nuvigia` | Só os registros do Nuvigia |
 
 As gravações ficam em `Nuvigia/{Câmera}/{AAAA-MM-DD}/`, com o arquivo nomeado pela hora (`10-15-07.mp4`).
 
@@ -33,23 +32,9 @@ O hub não precisa de nada do Google: ele recebe do app o ID do cliente junto co
 3. Em **Permissões de API**, adicione as permissões delegadas do Microsoft Graph `Files.ReadWrite.AppFolder` e `offline_access`.
 4. Coloque o **ID do aplicativo (cliente)** em `EXPO_PUBLIC_MICROSOFT_CLIENT_ID`.
 
-## iCloud (CloudKit)
+## iCloud
 
-Precisa de uma conta Apple Developer.
-
-1. No [CloudKit Console](https://icloud.developer.apple.com/), crie o container `iCloud.br.com.nuvigia` e ligue o iCloud com CloudKit no App ID `br.com.nuvigia.app`.
-2. Em **Schema › Record Types**, crie o tipo `Clip` com os campos `file` (Asset), `path` (String), `name` (String) e `day` (String, marcado como *Queryable*).
-   No ambiente de desenvolvimento o CloudKit cria o tipo sozinho no primeiro envio. Para produção, use **Deploy Schema Changes**.
-3. Em **API Access › Tokens**, crie um token de API com **Sign in Callback: URL Redirect** apontando para `nuvigia://oauth/icloud`.
-4. Coloque o token em `EXPO_PUBLIC_CLOUDKIT_API_TOKEN` (app) **e** em `CLOUDKIT_API_TOKEN` (hub). Use `development` em `EXPO_PUBLIC_CLOUDKIT_ENV` e `CLOUDKIT_ENV` até publicar.
-
-Limites do iCloud:
-
-- A Apple não oferece acesso do servidor ao iCloud Drive. Os clipes ficam no banco privado do CloudKit, contam na cota de iCloud da pessoa e são vistos pelo app Nuvigia.
-  Copiar os clipes para a pasta `iCloud Drive/Nuvigia`, para aparecerem no app Arquivos do iPhone, exige código nativo do iOS. Isso fica para depois.
-- O CloudKit não informa o espaço livre, então a cota mostra só o que o Nuvigia ocupa.
-- O envio de cada clipe ao CloudKit é feito de uma vez, sem partes. Arquivos grandes demoram mais para mostrar o progresso.
-- No Android o login funciona pelo navegador com a Conta Apple, mas não há pasta no Arquivos.
+O iCloud ficou de fora por enquanto. A Apple não deixa um servidor gravar no iCloud Drive, então ele exigiria código nativo no iPhone. O código anterior (CloudKit) está no histórico do Git, no commit da etapa 5.
 
 ## Retenção e cota
 

@@ -1,4 +1,4 @@
-/** Servidores falsos (só o necessário) de Google Drive, Microsoft Graph e CloudKit. */
+/** Servidores falsos (só o necessário) de Google Drive e Microsoft Graph. */
 type Handler = (url: URL, init: RequestInit & { bodyBuf: Buffer }) => Response | Promise<Response>;
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
@@ -161,39 +161,4 @@ export class FakeGraph extends FakeServer {
     this.files.set(id, { name: s.path, parent: '', data: s.data });
     return json({ id, name: s.path }, 201);
   }
-}
-
-export class FakeCloudKit extends FakeServer {
-  private pendingAssets = new Map<string, Buffer>();
-  rotateTo: string | null = null;
-
-  protected handle: Handler = (url, init) => {
-    if (url.host === 'cvws.test') {
-      const id = url.pathname.slice(1);
-      this.pendingAssets.set(id, init.bodyBuf);
-      return json({ singleFile: { receipt: id, size: init.bodyBuf.length, fileChecksum: 'x', wrappingKey: 'k', referenceChecksum: 'r' } });
-    }
-    if (url.searchParams.get('ckAPIToken') !== 'api-token') return json({ serverErrorCode: 'AUTHENTICATION_FAILED' }, 401);
-    if (url.searchParams.get('ckWebAuthToken') !== 'web+auth/token' && url.searchParams.get('ckWebAuthToken') !== 'girado') return json({ serverErrorCode: 'AUTHENTICATION_REQUIRED' }, 421);
-    const headers: Record<string, string> = this.rotateTo ? { 'x-apple-cloudkit-web-auth-token': this.rotateTo } : {};
-    const p = url.pathname;
-    if (p.endsWith('/public/users/caller')) return json({ userRecordName: '_abc', firstName: 'Ana', lastName: 'Souza' }, 200, headers);
-    if (p.endsWith('/private/assets/upload')) {
-      const id = `asset-${++this.seq}`;
-      return json({ tokens: [{ recordName: 'x', fieldName: 'file', url: `https://cvws.test/${id}` }] }, 200, headers);
-    }
-    if (p.endsWith('/private/records/modify')) {
-      const body = JSON.parse(init.bodyBuf.toString()) as { operations: { operationType: string; record: { recordName: string; fields?: { file: { value: { receipt: string } }; path: { value: string } } } }[] };
-      const op = body.operations[0]!;
-      if (op.operationType === 'create') {
-        const data = this.pendingAssets.get(op.record.fields!.file.value.receipt) ?? Buffer.alloc(0);
-        this.files.set(op.record.recordName, { name: op.record.fields!.path.value, parent: '', data });
-        return json({ records: [{ recordName: op.record.recordName }] }, 200, headers);
-      }
-      if (op.operationType === 'forceDelete') {
-        return json({ records: [this.files.delete(op.record.recordName) ? { recordName: op.record.recordName } : { serverErrorCode: 'NOT_FOUND' }] }, 200, headers);
-      }
-    }
-    return json({ serverErrorCode: 'BAD_REQUEST', reason: p }, 400);
-  };
 }

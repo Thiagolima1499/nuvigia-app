@@ -1,6 +1,6 @@
 import type { CloudProviderId } from '@nuvigia/shared';
 
-import { accent, neutral, sage } from '@/theme/theme';
+import { accent, sage } from '@/theme/theme';
 
 export type ProviderInfo = {
   id: CloudProviderId;
@@ -53,20 +53,6 @@ export const PROVIDERS: Record<CloudProviderId, ProviderInfo> = {
     usedBytes: 12.4 * GB,
     totalBytes: 1000 * GB,
   },
-  icloud: {
-    id: 'icloud',
-    name: 'iCloud Drive',
-    short: 'iCloud',
-    initial: 'A',
-    account: 'Conta Apple · voce@icloud.com',
-    folder: 'iCloud Drive › Nuvigia',
-    note: '5 GB grátis',
-    cta: 'Entrar com Apple',
-    badgeBg: neutral[300],
-    badgeFg: neutral[900],
-    usedBytes: 146 * GB,
-    totalBytes: 200 * GB,
-  },
 };
 
-export const PROVIDER_ORDER: CloudProviderId[] = ['google', 'onedrive', 'icloud'];
+export const PROVIDER_ORDER: CloudProviderId[] = ['google', 'onedrive'];

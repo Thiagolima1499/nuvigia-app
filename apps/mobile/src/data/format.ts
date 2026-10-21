@@ -63,7 +63,7 @@ export function greeting(d: Date): string {
   return 'Boa noite';
 }
 
-/** "38,2 GB de 100 GB", ou "12,4 GB usados" quando o provedor não informa o total (iCloud). */
+/** "38,2 GB de 100 GB", ou "12,4 GB usados" quando o provedor não informa o total. */
 export function quotaLabel(used: number, total: number | null | undefined): string {
   return total ? `${formatBytes(used)} de ${formatBytes(total)}` : `${formatBytes(used)} usados`;
 }

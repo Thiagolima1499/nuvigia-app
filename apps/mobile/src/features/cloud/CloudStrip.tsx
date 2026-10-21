@@ -42,7 +42,7 @@ export function NoCloudCard({ onConnect }: { onConnect: () => void }) {
         Escolha onde salvar
       </Heading>
       <Text size={13} color={accent[900]} style={styles.body}>
-        Conecte Google Drive, OneDrive ou iCloud. Sem a nuvem, as gravações ficam só no cartão de memória das câmeras.
+        Conecte Google Drive ou OneDrive. Sem a nuvem, as gravações ficam só no cartão de memória das câmeras.
       </Text>
       <Button label="Conectar nuvem" onPress={onConnect} />
     </View>

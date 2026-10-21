@@ -1,15 +1,9 @@
-import { parseCkToken, reverseClientId } from '@/services/cloudAuth';
+import { reverseClientId } from '@/services/cloudAuth';
 import { useAppStore, type Remote } from '@/state/store';
 
 describe('login da nuvem', () => {
   it('monta o esquema de retorno do Google', () => {
     expect(reverseClientId('123-abc.apps.googleusercontent.com')).toBe('com.googleusercontent.apps.123-abc');
-  });
-
-  it('lê o ckWebAuthToken do retorno da Apple', () => {
-    expect(parseCkToken('nuvigia://oauth/icloud?ckWebAuthToken=ab%2Bc%2Fd&x=1')).toBe('ab+c/d');
-    expect(parseCkToken('nuvigia://oauth/icloud#ckWebAuthToken=xyz')).toBe('xyz');
-    expect(parseCkToken('nuvigia://oauth/icloud')).toBeNull();
   });
 });
 
