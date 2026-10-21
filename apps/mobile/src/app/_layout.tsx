@@ -10,6 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@/components/ui';
 import { CloudDialog } from '@/features/cloud/CloudDialog';
+import { SessionGate } from '@/services/SessionGate';
 import { useAppStore } from '@/state/store';
 import { colors } from '@/theme/theme';
 
@@ -41,11 +42,14 @@ export default function RootLayout() {
         <ToastProvider>
           <StatusBar style="dark" />
           <UploadTicker />
+          <SessionGate />
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="camera/[id]" />
             <Stack.Screen name="adicionar" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
             <Stack.Screen name="catalogo" />
+            <Stack.Screen name="entrar" options={{ gestureEnabled: false }} />
+            <Stack.Screen name="parear" />
           </Stack>
           <CloudDialog />
         </ToastProvider>

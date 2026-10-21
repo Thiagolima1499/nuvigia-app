@@ -27,7 +27,16 @@
       "expo-router",
       "expo-font",
       "expo-splash-screen",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-web-browser",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "O Nuvigia usa a câmera para ler o QR code do hub.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ]
     ],
     "scheme": "nuvigia",
     "backgroundColor": "#f5ead8",

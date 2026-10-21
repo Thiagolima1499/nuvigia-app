@@ -5,13 +5,11 @@ import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { Button, Heading, Icon, IconButton, LiveBadge, PulseDot, Screen, Tag, Text, useToast } from '@/components/ui';
 import { formatClock, formatDayMonth, formatElapsed, formatTime } from '@/data/format';
-import { mockEvents } from '@/data/mock';
-import { PROVIDERS } from '@/data/providers';
 import { FeedPlaceholder } from '@/features/cameras/Feed';
 import { StateCard } from '@/features/common/StateCard';
 import { useInteraction } from '@/hooks/useInteraction';
 import { useNow } from '@/hooks/useNow';
-import { useAppStore } from '@/state/store';
+import { useAppStore, useCloudInfo, type UiEvent } from '@/state/store';
 import { accent, colors, focusRing, maxWidth, neutral, radius, sage, space } from '@/theme/theme';
 
 /** Tela Ao vivo (stream simulado nesta etapa; WebRTC/HLS na etapa 6). */
@@ -22,7 +20,6 @@ export default function LiveScreen() {
   const now = useNow();
   const { height, width } = useWindowDimensions();
   const cam = useAppStore((s) => s.cameras.find((c) => c.id === id));
-  const cloud = useAppStore((s) => s.cloud);
   const quality = useAppStore((s) => s.quality);
   const start = useAppStore((s) => s.startRecording);
   const stop = useAppStore((s) => s.stopRecording);
@@ -31,7 +28,9 @@ export default function LiveScreen() {
   const [talking, setTalking] = useState(false);
   const back = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
-  const prov = cloud ? PROVIDERS[cloud] : null;
+  const prov = useCloudInfo();
+  const allEvents = useAppStore((s) => s.events);
+  const snapshot = useAppStore((s) => s.snapshot);
   // altura do vídeo: min(62vh, 125vw), mínimo 220px
   const videoHeight = Math.max(220, Math.min(height * 0.62, width * 1.25));
 
@@ -114,7 +113,12 @@ export default function LiveScreen() {
         <ActionTile
           icon={CameraIcon}
           label="Foto"
-          onPress={() => (prov ? toast.show(`Foto salva no ${prov.name}`) : openCloudDialog())}
+          onPress={() => {
+            if (!prov) return openCloudDialog();
+            snapshot(cam.id)
+              .then(() => toast.show(`Foto salva no ${prov.name}`))
+              .catch(() => undefined);
+          }}
           disabled={!cam.online}
         />
         <ActionTile
@@ -141,7 +145,12 @@ export default function LiveScreen() {
 
       <View style={styles.events}>
         <Heading size={19}>Hoje</Heading>
-        {mockEvents(cam.id, now).map((e) => (
+        {todayEvents(allEvents, cam.id, now).length === 0 ? (
+          <Text size={13} color={neutral[700]}>
+            Nenhum evento hoje.
+          </Text>
+        ) : null}
+        {todayEvents(allEvents, cam.id, now).map((e) => (
           <View key={e.id} style={styles.eventRow}>
             <Text size={13} weight="semibold" tabular style={styles.eventTime}>
               {formatTime(e.at)}
@@ -155,6 +164,13 @@ export default function LiveScreen() {
       </View>
     </Screen>
   );
+}
+
+function todayEvents(events: UiEvent[], cameraId: string, now: Date) {
+  return events
+    .filter((e) => e.cameraId === cameraId && new Date(e.at).toDateString() === now.toDateString())
+    .sort((a, b) => b.at.localeCompare(a.at))
+    .slice(0, 20);
 }
 
 function Header({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
