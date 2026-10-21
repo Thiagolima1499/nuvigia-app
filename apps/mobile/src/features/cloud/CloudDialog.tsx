@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { BottomSheet, Button, DialogBody, Radio, RadioGroup, useToast } from '@/components/ui';
 import { PROVIDER_ORDER, PROVIDERS } from '@/data/providers';
+import { cloudLogin, CloudLoginError } from '@/services/cloudAuth';
 import { useAppStore } from '@/state/store';
 import { space } from '@/theme/theme';
 
 /**
  * Diálogo "Onde salvar as gravações?". Fica na raiz do app e abre por `openCloudDialog()`.
- * Nesta etapa o "Entrar com …" é simulado; o OAuth real entra na etapa 5.
+ * No modo real, "Entrar com …" abre o login do provedor e entrega o resultado ao hub;
+ * no modo demonstração, só simula.
  */
 export function CloudDialog() {
   const toast = useToast();
@@ -15,7 +18,29 @@ export function CloudDialog() {
   const setPick = useAppStore((s) => s.setDialogPick);
   const close = useAppStore((s) => s.closeCloudDialog);
   const connect = useAppStore((s) => s.connectCloud);
+  const linkCloud = useAppStore((s) => s.linkCloud);
+  const live = useAppStore((s) => s.mode === 'live');
+  const [busy, setBusy] = useState(false);
   const p = PROVIDERS[pick];
+
+  const onConnect = async () => {
+    if (!live) {
+      connect(pick);
+      toast.show(`${p.name} conectado`);
+      return;
+    }
+    setBusy(true);
+    try {
+      const command = await cloudLogin(pick);
+      if (!command) return; // a pessoa cancelou o login
+      await linkCloud(command);
+      toast.show(`${p.name} conectado`);
+    } catch (e) {
+      toast.show(e instanceof CloudLoginError ? e.message : e instanceof Error && e.message === 'hub_timeout' ? 'O hub não respondeu. Tente de novo.' : `Não foi possível conectar ao ${p.name}.`);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <BottomSheet
@@ -27,11 +52,9 @@ export function CloudDialog() {
           <Button label="Agora não" variant="secondary" onPress={close} />
           <Button
             testID="cloud-dialog-cta"
-            label={p.cta}
-            onPress={() => {
-              connect(pick);
-              toast.show(`${p.name} conectado`);
-            }}
+            label={busy ? 'Conectando…' : p.cta}
+            disabled={busy}
+            onPress={() => void onConnect()}
           />
         </>
       }
