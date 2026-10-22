@@ -9,7 +9,7 @@ Siga [supabase/README.md](../supabase/README.md#criar-o-projeto): crie o projeto
 
 ## 2. Hub (no computador ou mini PC de casa)
 
-Siga [apps/hub/README.md](../apps/hub/README.md). Ao subir, o hub mostra um código de 6 dígitos e um QR code no terminal e em `http://IP-DO-HUB:8787`.
+Siga [apps/hub/README.md](../apps/hub/README.md). Sem equipamento no local, use uma VPS: [hub-na-nuvem.md](hub-na-nuvem.md). Ao subir, o hub mostra um código de 6 dígitos e um QR code no terminal e em `http://IP-DO-HUB:8787`.
 
 ## 3. Contas de nuvem (opcional)
 

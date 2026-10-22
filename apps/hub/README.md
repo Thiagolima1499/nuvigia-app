@@ -1,6 +1,7 @@
 # Hub Nuvigia
 
 Serviço Node.js (TypeScript) que fica ligado 24h na rede de casa, num Raspberry Pi 4/5, mini PC ou NAS com Linux.
+Também roda numa VPS na nuvem, ligada ao roteador das câmeras por WireGuard, sem equipamento extra no local: [docs/hub-na-nuvem.md](../../docs/hub-na-nuvem.md).
 Ele conversa com as câmeras Wi‑Fi, grava, detecta movimento e envia para Google Drive ou OneDrive.
 O app fala com o hub pelo Supabase Realtime, então **nenhuma porta é aberta no roteador**.
 
@@ -49,9 +50,23 @@ docker compose -f apps/hub/docker-compose.yml logs -f hub   # mostra o QR
 Depois, no app: **Ajustes › Parear hub**, leia o QR ou digite o código. Em seguida **Adicionar câmera**.
 
 O Compose usa `network_mode: host`, que precisa de Linux (no Docker Desktop para Windows/Mac a descoberta de câmeras não funciona).
-No Windows, rode sem Docker (abaixo) ou use uma máquina Linux na rede.
+No Windows, use o instalador abaixo.
 
 Guarde o `.env` (principalmente a `HUB_SECRET_KEY`) e o volume `nuvigia-data`. Sem eles o hub precisa ser registrado e pareado de novo, e as câmeras adicionadas de novo.
+
+## Instalar no Windows (sem Docker)
+
+Funciona num PC com Windows 10 ou 11 ligado na mesma rede das câmeras. O instalador baixa o que falta (Node.js e ffmpeg pelo winget, e o go2rtc), monta o hub e preenche o `.env`.
+
+1. Baixe o projeto: no GitHub, **Code › Download ZIP**, e extraia numa pasta fixa (por exemplo `C:\Nuvigia`). Ou use `git clone`.
+2. Dê dois cliques em `apps\hub\windows\instalar.cmd`. Ele pergunta a `SUPABASE_URL`, a `SUPABASE_ANON_KEY` e o `HUB_REGISTRATION_SECRET`, e gera a `HUB_SECRET_KEY` sozinho.
+   Rodando como administrador (botão direito › Executar como administrador), ele também libera as portas 8787 e 8555 no firewall.
+   No fim, pergunta se o hub deve ligar sozinho quando você entra no Windows (tarefa agendada "Nuvigia Hub").
+3. Dê dois cliques em `apps\hub\windows\iniciar.cmd`. A janela mostra o código de 6 dígitos e o QR, que também aparecem em `http://localhost:8787`.
+   Se o Windows perguntar sobre o firewall, permita o Node.js e o go2rtc em **Redes privadas**.
+
+Para atualizar o hub, baixe a versão nova por cima e rode o `instalar.cmd` de novo: o `.env` e a pasta `apps\hub\data` são mantidos.
+Os registros da tarefa agendada ficam em `apps\hub\data\logs`. Deixe o PC sem suspender (Configurações › Sistema › Energia), senão as câmeras param de gravar.
 
 ## Rodar sem Docker (desenvolvimento)
 
