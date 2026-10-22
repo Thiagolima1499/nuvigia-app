@@ -1,6 +1,7 @@
 # Hub Nuvigia
 
 Serviço Node.js (TypeScript) que fica ligado 24h na rede de casa, num Raspberry Pi 4/5, mini PC ou NAS com Linux.
+Também roda numa VPS na nuvem, ligada ao roteador das câmeras por WireGuard, sem equipamento extra no local: [docs/hub-na-nuvem.md](../../docs/hub-na-nuvem.md).
 Ele conversa com as câmeras Wi‑Fi, grava, detecta movimento e envia para Google Drive ou OneDrive.
 O app fala com o hub pelo Supabase Realtime, então **nenhuma porta é aberta no roteador**.
 
